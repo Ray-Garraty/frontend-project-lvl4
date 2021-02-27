@@ -1,11 +1,13 @@
 // @ts-check
-
+import React from 'react';
+import ReactDOM from 'react-dom';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
 import '../assets/application.scss';
 
 import gon from 'gon';
+import Slack from './component.jsx';
 
 if (process.env.NODE_ENV !== 'production') {
   localStorage.debug = 'chat:*';
@@ -30,5 +32,6 @@ card.append(cardBody);
 const container = document.querySelector('#chat');
 container.append(card);
 
-console.log('it works!');
-console.log('gon', gon);
+const { channels, messages, currentChannelId } = gon;
+
+ReactDOM.render(<Slack channels={channels} messages={messages} currentChannelId={currentChannelId}/>, container);
