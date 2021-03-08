@@ -1,57 +1,59 @@
-import { uniqueId } from 'lodash';
+/* eslint-disable no-param-reassign */
+import gon from 'gon';
 import { createSlice } from '@reduxjs/toolkit';
 
-export const state = createSlice({
-  name: 'state',
+console.log('gon в слайсе: ', gon);
+const { currentChannelId } = gon;
+const channelsById = {};
+gon.channels.forEach((channel) => {
+  const { id } = channel;
+  channel.allMessagesIds = [];
+  channelsById[id] = channel;
+});
+const allChannelIds = Object.keys(channelsById).sort((a, b) => a - b);
+const messagesById = {};
+gon.messages.forEach((message) => {
+  const { id, channelId } = message;
+  messagesById[id] = message;
+  channelsById[channelId].allMessagesIds = [...channelsById[channelId].allMessagesIds, id];
+});
+const allMessagesIds = Object.keys(messagesById).sort((a, b) => a - b);
+
+export const chatSlice = createSlice({
+  name: 'chat',
   initialState: {
-    uiState: {
-      form: {
-        inputField: {
-          value: '',
-        },
-      },
-      currentChannelId: null,
-    },
+    currentChannelId,
     channels: {
-      byId: {
-        1: {
-          id: 1,
-          name: 'general',
-          removable: false,
-          messagesIds: [],
-        },
-        2: {
-          id: 2,
-          name: 'random',
-          removable: false,
-          messagesIds: [],
-        },
-      },
-      allIds: [1, 2],
+      byId: channelsById,
+      allIds: allChannelIds,
     },
     messages: {
-      byId: {},
-      allIds: [],
+      byId: messagesById,
+      allIds: allMessagesIds,
     },
   },
   reducers: {
     addMessage: (state, action) => {
-      const { userName, text, channelId } = action.payload;
-      const message = {
-        id: uniqueId(),
-        author: userName,
-        text,
-        channelId,
-      };
-      const channelMessagesIds = state.channels.byId[channelId].messagesIds;
-      const newMessagesIds = [channelMessagesIds, message.id];
-      state.channels.byId[channelId].messagesIds = newMessagesIds;
-      state.messages.byId[message.id] = message;
-      state.messages.allIds = [...state.messages.allIds, message.id];
+      try {
+        const message = action.payload;
+        console.log('message внутри редьюсера перед добавлением в state: ', message);
+        const { channelId } = message;
+        // добавляем messageId в массив messagesIds текущего канала
+        console.log('state в редьюсере: ', state);
+        const channelMessagesIds = state.channels.byId[channelId].messagesIds;
+        console.log('channelMessagesIds в редьюсере: ', channelMessagesIds);
+        state.channels.byId[channelId].messagesIds = [...channelMessagesIds, message.id];
+        // добавляем message в объект messages.byId
+        state.messages.byId[message.id] = message;
+        state.messages.allIds = [...state.messages.allIds, message.id];
+        console.log('новый state в редьюсере: ', state);
+      } catch (e) {
+        console.log(e);
+      }
     },
   },
 });
 
-export const { addMessage } = state.actions;
+export const { addMessage } = chatSlice.actions;
 
-export default state.reducer;
+export default chatSlice.reducer;

@@ -1,5 +1,10 @@
 import React from 'react';
 import cn from 'classnames';
+import axios from 'axios';
+import { Formik } from 'formik';
+import { useDispatch, useSelector } from 'react-redux';
+import { addMessage } from './app/slice';
+import routes from './routes';
 
 const PermanentChannel = (props) => {
   const { currentChannelId, channel: { id, name } } = props;
@@ -71,8 +76,9 @@ const RemovableChannel = (props) => {
   );
 };
 
-const Channels = (props) => {
-  const { channels, currentChannelId } = props;
+const Channels = () => {
+  const channels = useSelector((state) => Object.values(state.messages.channels.byId));
+  const currentChannelId = useSelector((state) => state.messages.currentChannelId);
   return (
     <div className="col-3 border-right">
       <div className="d-flex mb-2">
@@ -81,38 +87,101 @@ const Channels = (props) => {
       </div>
       <ul className="nav flex-column nav-pills nav-fill">
         {channels.map((channel) => (channel.removable
-          ? <RemovableChannel currentChannelId={currentChannelId} channel={channel} key={channel.id}/>
-          : <PermanentChannel currentChannelId={currentChannelId} channel={channel} key={channel.id}/>
+          ? (
+            <RemovableChannel
+              currentChannelId={currentChannelId}
+              channel={channel}
+              key={channel.id}
+            />
+          )
+          : (
+            <PermanentChannel
+              currentChannelId={currentChannelId}
+              channel={channel}
+              key={channel.id}
+            />
+          )
         ))}
       </ul>
     </div>
   );
 };
 
-const Messages = (props) => {
-  const { messages } = props;
+const Messages = () => {
+  const messages = useSelector((state) => Object.values(state.messages.messages.byId));
+  console.log('messages внутри компонента Messages: ', messages);
+  const dispatch = useDispatch();
+
   return (
     <div className="col h-100">
       <div className="d-flex flex-column h-100">
         <div id="messages-box" className="chat-messages overflow-auto mb-3">
-          {messages.map(({ author, text }) => (
-            <div className="text-break">
+          {messages.map(({ author, text, id }) => (
+            <div className="text-break" key={id}>
               <b>{author}</b>
-              :
+              :&nbsp;
               {text}
             </div>
           ))}
         </div>
         <div className="mt-auto">
-          <form noValidate>
-            <div className="form-group">
-              <div className="input-group">
-                <input className="mr-2 form-control" name="body" aria-label="body" value="" />
-                <button className="btn btn-primary" aria-label="submit" type="submit">Submit</button>
-                <div className="d-block invalid-feedback" />
-              </div>
-            </div>
-          </form>
+          <Formik
+            initialValues={{ text: '' }}
+            onSubmit={async (values, { setSubmitting, resetForm }) => {
+              console.log('Вы ввели: ', values.text);
+              const channelId = 1;
+              const request = {
+                data: {
+                  attributes: {
+                    author: 'Ray Garraty',
+                    text: values.text,
+                    channelId,
+                  },
+                },
+              };
+              const response = await axios.post(routes.channelMessagesPath(channelId), request);
+              const { data: { attributes } } = response.data;
+              console.log('Ответ с сервера после отправки нового сообщения: ', attributes);
+              dispatch(addMessage(attributes));
+              setSubmitting(false);
+              resetForm();
+            }}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              isSubmitting,
+            }) => (
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="form-group">
+                  <div className="input-group">
+                    <input
+                      name="text"
+                      aria-label="body"
+                      className="mr-2 form-control"
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.text}
+                    />
+                    {errors.text && touched.text}
+                    <button
+                      type="submit"
+                      aria-label="submit"
+                      className="btn btn-primary"
+                      disabled={isSubmitting}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                  <div className="d-block invalid-feedback" />
+                </div>
+              </form>
+            )}
+          </Formik>
         </div>
       </div>
     </div>
