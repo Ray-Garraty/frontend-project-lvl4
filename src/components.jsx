@@ -77,8 +77,8 @@ const RemovableChannel = (props) => {
 };
 
 const Channels = () => {
-  const channels = useSelector((state) => Object.values(state.messages.channels.byId));
-  const currentChannelId = useSelector((state) => state.messages.currentChannelId);
+  const channels = useSelector((state) => Object.values(state.channels.byId));
+  const currentChannelId = useSelector((state) => state.currentChannelId);
   return (
     <div className="col-3 border-right">
       <div className="d-flex mb-2">
@@ -108,7 +108,7 @@ const Channels = () => {
 };
 
 const Messages = () => {
-  const messages = useSelector((state) => Object.values(state.messages.messages.byId));
+  const messages = useSelector((state) => Object.values(state.messages.byId));
   console.log('messages внутри компонента Messages: ', messages);
   const dispatch = useDispatch();
 
@@ -188,12 +188,9 @@ const Messages = () => {
   );
 };
 
-export default (props) => {
-  const { channels, messages } = props;
-  return (
-    <div className="row h-100 pb-3">
-      <Channels channels={channels} />
-      <Messages messages={messages} />
-    </div>
-  );
-};
+export default () => (
+  <div className="row h-100 pb-3">
+    <Channels />
+    <Messages />
+  </div>
+);

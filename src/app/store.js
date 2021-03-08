@@ -1,8 +1,4 @@
 import { configureStore } from '@reduxjs/toolkit';
-import messagesReducer from './slice';
+import reducer from './slice';
 
-export default configureStore({
-  reducer: {
-    messages: messagesReducer,
-  },
-});
+export default configureStore({ reducer });
