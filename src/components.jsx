@@ -2,6 +2,7 @@ import React from 'react';
 import cn from 'classnames';
 import axios from 'axios';
 import { Formik } from 'formik';
+import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
 import { addMessage } from './app/slice';
 import routes from './routes';
@@ -109,8 +110,13 @@ const Channels = () => {
 
 const Messages = () => {
   const messages = useSelector((state) => Object.values(state.messages.byId));
-  console.log('messages внутри компонента Messages: ', messages);
+  const channelId = useSelector((state) => state.currentChannelId);
+  // console.log('messages внутри компонента Messages: ', messages);
   const dispatch = useDispatch();
+  const socket = io('http://localhost:5000');
+  socket.on('newMessage', ({ data: { attributes } }) => {
+    dispatch(addMessage(attributes));
+  });
 
   return (
     <div className="col h-100">
@@ -128,8 +134,7 @@ const Messages = () => {
           <Formik
             initialValues={{ text: '' }}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
-              console.log('Вы ввели: ', values.text);
-              const channelId = 1;
+              // console.log('Вы ввели: ', values.text);
               const request = {
                 data: {
                   attributes: {
@@ -141,7 +146,7 @@ const Messages = () => {
               };
               const response = await axios.post(routes.channelMessagesPath(channelId), request);
               const { data: { attributes } } = response.data;
-              console.log('Ответ с сервера после отправки нового сообщения: ', attributes);
+              // console.log('Ответ с сервера после отправки нового сообщения: ', attributes);
               dispatch(addMessage(attributes));
               setSubmitting(false);
               resetForm();

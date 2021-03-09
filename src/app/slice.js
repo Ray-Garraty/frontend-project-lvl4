@@ -36,17 +36,17 @@ export const chatSlice = createSlice({
     addMessage: (state, action) => {
       try {
         const message = action.payload;
-        console.log('message внутри редьюсера перед добавлением в state: ', message);
+        // console.log('message внутри редьюсера перед добавлением в state: ', message);
         const { channelId } = message;
         // добавляем messageId в массив messagesIds текущего канала
-        console.log('state в редьюсере: ', current(state));
+        // console.log('state в редьюсере: ', current(state));
         const channelMessagesIds = state.channels.byId[channelId].messagesIds;
-        console.log('channelMessagesIds в редьюсере: ', channelMessagesIds);
+        // console.log('channelMessagesIds в редьюсере: ', channelMessagesIds);
         state.channels.byId[channelId].messagesIds = [...channelMessagesIds, message.id];
         // добавляем message в объект messages.byId
         state.messages.byId[message.id] = message;
         state.messages.allIds = [...state.messages.allIds, message.id];
-        console.log('новый state в редьюсере: ', state);
+        // console.log('новый state в редьюсере: ', state);
       } catch (e) {
         console.log(e);
       }
