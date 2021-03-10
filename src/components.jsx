@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addMessage } from './app/slice';
 import routes from './routes';
 
+export const AuthorContext = React.createContext('Anonymous');
+
 const PermanentChannel = (props) => {
   const { currentChannelId, channel: { id, name } } = props;
   const isActive = id === currentChannelId ? 'btn-primary' : 'btn-light';
@@ -119,77 +121,81 @@ const Messages = () => {
   });
 
   return (
-    <div className="col h-100">
-      <div className="d-flex flex-column h-100">
-        <div id="messages-box" className="chat-messages overflow-auto mb-3">
-          {messages.map(({ author, text, id }) => (
-            <div className="text-break" key={id}>
-              <b>{author}</b>
-              :&nbsp;
-              {text}
-            </div>
-          ))}
-        </div>
-        <div className="mt-auto">
-          <Formik
-            initialValues={{ text: '' }}
-            onSubmit={async (values, { setSubmitting, resetForm }) => {
-              // console.log('Вы ввели: ', values.text);
-              const request = {
-                data: {
-                  attributes: {
-                    author: 'Ray Garraty',
-                    text: values.text,
-                    channelId,
-                  },
-                },
-              };
-              const response = await axios.post(routes.channelMessagesPath(channelId), request);
-              const { data: { attributes } } = response.data;
-              // console.log('Ответ с сервера после отправки нового сообщения: ', attributes);
-              dispatch(addMessage(attributes));
-              setSubmitting(false);
-              resetForm();
-            }}
-          >
-            {({
-              values,
-              errors,
-              touched,
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              isSubmitting,
-            }) => (
-              <form onSubmit={handleSubmit} noValidate>
-                <div className="form-group">
-                  <div className="input-group">
-                    <input
-                      name="text"
-                      aria-label="body"
-                      className="mr-2 form-control"
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      value={values.text}
-                    />
-                    {errors.text && touched.text}
-                    <button
-                      type="submit"
-                      aria-label="submit"
-                      className="btn btn-primary"
-                      disabled={isSubmitting}
-                    >
-                      Submit
-                    </button>
-                  </div>
-                  <div className="d-block invalid-feedback" />
+    <AuthorContext.Consumer>
+      {(author) => (
+        <div className="col h-100">
+          <div className="d-flex flex-column h-100">
+            <div id="messages-box" className="chat-messages overflow-auto mb-3">
+              {messages.map(({ author, text, id }) => (
+                <div className="text-break" key={id}>
+                  <b>{author}</b>
+                  :&nbsp;
+                  {text}
                 </div>
-              </form>
-            )}
-          </Formik>
+              ))}
+            </div>
+            <div className="mt-auto">
+              <Formik
+                initialValues={{ text: '' }}
+                onSubmit={async (values, { setSubmitting, resetForm }) => {
+                // console.log('Вы ввели: ', values.text);
+                  const request = {
+                    data: {
+                      attributes: {
+                        author,
+                        text: values.text,
+                        channelId,
+                      },
+                    },
+                  };
+                  const response = await axios.post(routes.channelMessagesPath(channelId), request);
+                  const { data: { attributes } } = response.data;
+                  // console.log('Ответ с сервера после отправки нового сообщения: ', attributes);
+                  dispatch(addMessage(attributes));
+                  setSubmitting(false);
+                  resetForm();
+                }}
+              >
+                {({
+                  values,
+                  errors,
+                  touched,
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  isSubmitting,
+                }) => (
+                  <form onSubmit={handleSubmit} noValidate>
+                    <div className="form-group">
+                      <div className="input-group">
+                        <input
+                          name="text"
+                          aria-label="body"
+                          className="mr-2 form-control"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.text}
+                        />
+                        {errors.text && touched.text}
+                        <button
+                          type="submit"
+                          aria-label="submit"
+                          className="btn btn-primary"
+                          disabled={isSubmitting}
+                        >
+                          Submit
+                        </button>
+                      </div>
+                      <div className="d-block invalid-feedback" />
+                    </div>
+                  </form>
+                )}
+              </Formik>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </AuthorContext.Consumer>
   );
 };
 
