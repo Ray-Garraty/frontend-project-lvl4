@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Formik } from 'formik';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessage } from './app/slice';
+import { addMessageSuccess, addMessageFailure } from './app/slice';
 import routes from './routes';
 
 export const AuthorContext = React.createContext('Anonymous');
@@ -113,11 +113,12 @@ const Channels = () => {
 const Messages = () => {
   const messages = useSelector((state) => Object.values(state.messages.byId));
   const channelId = useSelector((state) => state.currentChannelId);
+  const isNetworkOn = useSelector((state) => state.isNetworkOn);
   // console.log('messages внутри компонента Messages: ', messages);
   const dispatch = useDispatch();
   const socket = io('http://localhost:5000');
   socket.on('newMessage', ({ data: { attributes } }) => {
-    dispatch(addMessage(attributes));
+    dispatch(addMessageSuccess(attributes));
   });
 
   return (
@@ -148,12 +149,17 @@ const Messages = () => {
                       },
                     },
                   };
-                  const response = await axios.post(routes.channelMessagesPath(channelId), request);
-                  const { data: { attributes } } = response.data;
-                  // console.log('Ответ с сервера после отправки нового сообщения: ', attributes);
-                  dispatch(addMessage(attributes));
-                  setSubmitting(false);
-                  resetForm();
+                  try {
+                    const response = await axios
+                      .post(routes.channelMessagesPath(channelId), request);
+                    const { data: { attributes } } = response.data;
+                    dispatch(addMessageSuccess(attributes));
+                    setSubmitting(false);
+                    resetForm();
+                  } catch (e) {
+                    dispatch(addMessageFailure());
+                    setSubmitting(false);
+                  }
                 }}
               >
                 {({
@@ -186,7 +192,9 @@ const Messages = () => {
                           Submit
                         </button>
                       </div>
-                      <div className="d-block invalid-feedback" />
+                      <div className="d-block invalid-feedback">
+                        {isNetworkOn ? '' : 'Network error. Please try again later'}
+                      </div>
                     </div>
                   </form>
                 )}

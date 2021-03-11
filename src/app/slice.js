@@ -2,7 +2,7 @@
 import gon from 'gon';
 import { createSlice, current } from '@reduxjs/toolkit';
 
-console.log('gon в слайсе: ', gon);
+// console.log('gon в слайсе: ', gon);
 const { currentChannelId } = gon;
 const channelsById = {};
 gon.channels.forEach((channel) => {
@@ -22,6 +22,7 @@ const allMessagesIds = Object.keys(messagesById).sort((a, b) => a - b);
 export const chatSlice = createSlice({
   name: 'chat',
   initialState: {
+    isNetworkOn: true,
     currentChannelId,
     channels: {
       byId: channelsById,
@@ -33,8 +34,9 @@ export const chatSlice = createSlice({
     },
   },
   reducers: {
-    addMessage: (state, action) => {
+    addMessageSuccess: (state, action) => {
       try {
+        state.isNetworkOn = true;
         const message = action.payload;
         // console.log('message внутри редьюсера перед добавлением в state: ', message);
         const { channelId } = message;
@@ -51,9 +53,12 @@ export const chatSlice = createSlice({
         console.log(e);
       }
     },
+    addMessageFailure: (state) => {
+      state.isNetworkOn = false;
+    },
   },
 });
 
-export const { addMessage } = chatSlice.actions;
+export const { addMessageSuccess, addMessageFailure } = chatSlice.actions;
 
 export default chatSlice.reducer;
