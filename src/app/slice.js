@@ -56,9 +56,14 @@ export const chatSlice = createSlice({
     addMessageFailure: (state) => {
       state.isNetworkOn = false;
     },
+    activateChannel: (state, action) => {
+      const id = action.payload;
+      console.log('id активируемого канала внутри редуктора: ', id);
+      state.currentChannelId = id;
+    },
   },
 });
 
-export const { addMessageSuccess, addMessageFailure } = chatSlice.actions;
+export const { addMessageSuccess, addMessageFailure, activateChannel } = chatSlice.actions;
 
 export default chatSlice.reducer;

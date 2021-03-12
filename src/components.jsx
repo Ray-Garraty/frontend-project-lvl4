@@ -4,10 +4,14 @@ import axios from 'axios';
 import { Formik } from 'formik';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessageSuccess, addMessageFailure } from './app/slice';
+import { addMessageSuccess, addMessageFailure, activateChannel } from './app/slice';
 import routes from './routes';
 
 export const AuthorContext = React.createContext('Anonymous');
+
+const switchToChannel = (id, handler) => () => {
+  handler(activateChannel(id));
+};
 
 const PermanentChannel = (props) => {
   const { currentChannelId, channel: { id, name } } = props;
@@ -20,10 +24,10 @@ const PermanentChannel = (props) => {
     'btn',
     { [isActive]: true },
   );
+  const dispatch = useDispatch();
   return (
     <li className="nav-item">
-      ::marker
-      <button className={buttonClassNames} type="button">{name}</button>
+      <button className={buttonClassNames} type="button" onClick={switchToChannel(id, dispatch)}>{name}</button>
     </li>
   );
 };
@@ -52,11 +56,11 @@ const RemovableChannel = (props) => {
     opacity: '0',
     'pointer-events': 'none',
   };
+  const dispatch = useDispatch();
   return (
     <li className="nav-item">
-      ::marker
       <div className="d-flex mb-2 dropdown btn-group" role="group">
-        <button className={firstButtonClassNames} type="button">{name}</button>
+        <button className={firstButtonClassNames} type="button" onClick={switchToChannel(id, dispatch)}>{name}</button>
         <button
           className={secondButtonClassNames}
           aria-haspopup="true"
@@ -111,11 +115,15 @@ const Channels = () => {
 };
 
 const Messages = () => {
-  const messages = useSelector((state) => Object.values(state.messages.byId));
+  const dispatch = useDispatch();
+  const currentChannelMessages = useSelector((state) => {
+    const { currentChannelId } = state;
+    const allMessages = Object.values(state.messages.byId);
+    return allMessages.filter(({ channelId }) => channelId === currentChannelId);
+  });
   const channelId = useSelector((state) => state.currentChannelId);
   const isNetworkOn = useSelector((state) => state.isNetworkOn);
   // console.log('messages внутри компонента Messages: ', messages);
-  const dispatch = useDispatch();
   const socket = io('http://localhost:5000');
   socket.on('newMessage', ({ data: { attributes } }) => {
     dispatch(addMessageSuccess(attributes));
@@ -127,7 +135,7 @@ const Messages = () => {
         <div className="col h-100">
           <div className="d-flex flex-column h-100">
             <div id="messages-box" className="chat-messages overflow-auto mb-3">
-              {messages.map(({ author, text, id }) => (
+              {currentChannelMessages.map(({ author, text, id }) => (
                 <div className="text-break" key={id}>
                   <b>{author}</b>
                   :&nbsp;
