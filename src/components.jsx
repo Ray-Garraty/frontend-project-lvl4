@@ -4,7 +4,14 @@ import axios from 'axios';
 import { Formik } from 'formik';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessageSuccess, addMessageFailure, activateChannel } from './app/slice';
+import {
+  addMessageSuccess,
+  addMessageFailure,
+  addChannelSuccess,
+  addChannelFailure,
+  activateChannel,
+  toggleModalWindow,
+} from './app/slice';
 import routes from './routes';
 
 export const AuthorContext = React.createContext('Anonymous');
@@ -54,7 +61,7 @@ const RemovableChannel = (props) => {
     top: '0px',
     margin: '0px',
     opacity: '0',
-    'pointer-events': 'none',
+    pointerEvents: 'none',
   };
   const dispatch = useDispatch();
   return (
@@ -66,9 +73,7 @@ const RemovableChannel = (props) => {
           aria-haspopup="true"
           aria-expanded="false"
           type="button"
-        >
-          ::after
-        </button>
+        />
         <div
           className="dropdown-menu"
           style={dropDownDivStyles}
@@ -86,11 +91,16 @@ const RemovableChannel = (props) => {
 const Channels = () => {
   const channels = useSelector((state) => Object.values(state.channels.byId));
   const currentChannelId = useSelector((state) => state.currentChannelId);
+  const dispatch = useDispatch();
+  const toggleModal = (e) => {
+    e.preventDefault();
+    dispatch(toggleModalWindow());
+  };
   return (
     <div className="col-3 border-right">
       <div className="d-flex mb-2">
         <span>Channels</span>
-        <button className="ml-auto p-0 btn btn-link" type="button">+</button>
+        <button className="ml-auto p-0 btn btn-link" type="button" onClick={toggleModal}>+</button>
       </div>
       <ul className="nav flex-column nav-pills nav-fill">
         {channels.map((channel) => (channel.removable
@@ -215,9 +225,110 @@ const Messages = () => {
   );
 };
 
-export default () => (
-  <div className="row h-100 pb-3">
-    <Channels />
-    <Messages />
-  </div>
-);
+const Modal = () => {
+  const dispatch = useDispatch();
+  const toggleModal = (e) => {
+    e.preventDefault();
+    dispatch(toggleModalWindow());
+  };
+  return (
+    <>
+      <div className="fade modal-backdrop show" />
+      <div
+        className="fade modal show"
+        role="dialog"
+        aria-modal="true"
+        tabIndex="-1"
+        style={{ display: 'block' }}
+      >
+        <div className="modal-dialog" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <div className="modal-title h4">
+                Add channel
+              </div>
+              <button className="close" type="button" onClick={toggleModal}>
+                <span aria-hidden="true">x</span>
+                <span className="sr-only">Close</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <Formik
+                initialValues={{ name: '' }}
+                validate={(values) => {
+                  const errors = {};
+                  if (!values.name) {
+                    errors.name = 'Required';
+                  }
+                  return errors;
+                }}
+                onSubmit={async ({ name }, { setSubmitting, resetForm }) => {
+                  const request = { data: { attributes: { name } } };
+                  try {
+                    const response = await axios
+                      .post(routes.channelsPath(), request);
+                    const { data: { attributes } } = response.data;
+                    dispatch(addChannelSuccess(attributes));
+                    setSubmitting(false);
+                    resetForm();
+                    dispatch(toggleModalWindow());
+                  } catch (e) {
+                    console.log(e);
+                    dispatch(addChannelFailure());
+                    setSubmitting(false);
+                  }
+                }}
+              >
+                {({
+                  values: { name },
+                  errors,
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  isSubmitting,
+                }) => (
+                  <form onSubmit={handleSubmit} noValidate>
+                    <div className="form-group">
+                      <input
+                        className={cn('mb-2', 'form-control', { 'is-invalid': errors.name })}
+                        required
+                        name="name"
+                        value={name}
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                      />
+                      {errors.name && <div className="d-block mb-2 invalid-feedback">{errors.name}</div>}
+                      <div className="d-flex justify-content-end">
+                        <button
+                          className="mr-2 btn btn-secondary"
+                          type="button"
+                          onClick={toggleModal}
+                        >
+                          Cancel
+                        </button>
+                        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
+              </Formik>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default () => {
+  const isModalOpened = useSelector((state) => state.uiState.modalWindow.isOpened);
+  return (
+    <div className="row h-100 pb-3">
+      {isModalOpened && <Modal />}
+      <Channels />
+      <Messages />
+    </div>
+  );
+};

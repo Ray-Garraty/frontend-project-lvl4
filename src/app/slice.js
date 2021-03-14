@@ -24,6 +24,15 @@ export const chatSlice = createSlice({
   initialState: {
     isNetworkOn: true,
     currentChannelId,
+    uiState: {
+      modalWindow: {
+        isOpened: false,
+        error: null,
+        input: {
+          isValid: true,
+        },
+      },
+    },
     channels: {
       byId: channelsById,
       allIds: allChannelIds,
@@ -38,17 +47,11 @@ export const chatSlice = createSlice({
       try {
         state.isNetworkOn = true;
         const message = action.payload;
-        // console.log('message внутри редьюсера перед добавлением в state: ', message);
         const { channelId } = message;
-        // добавляем messageId в массив messagesIds текущего канала
-        // console.log('state в редьюсере: ', current(state));
         const channelMessagesIds = state.channels.byId[channelId].messagesIds;
-        // console.log('channelMessagesIds в редьюсере: ', channelMessagesIds);
         state.channels.byId[channelId].messagesIds = [...channelMessagesIds, message.id];
-        // добавляем message в объект messages.byId
         state.messages.byId[message.id] = message;
         state.messages.allIds = [...state.messages.allIds, message.id];
-        // console.log('новый state в редьюсере: ', state);
       } catch (e) {
         console.log(e);
       }
@@ -58,12 +61,31 @@ export const chatSlice = createSlice({
     },
     activateChannel: (state, action) => {
       const id = action.payload;
-      console.log('id активируемого канала внутри редуктора: ', id);
       state.currentChannelId = id;
+    },
+    addChannelSuccess: (state, action) => {
+      state.isNetworkOn = true;
+      const channel = action.payload;
+      const { id } = channel;
+      state.channels.byId[id] = channel;
+    },
+    addChannelFailure: (state) => {
+      state.channels.uiState.modalWindow.error = 'Network error. Try again later';
+      state.isNetworkOn = false;
+    },
+    toggleModalWindow: (state) => {
+      state.uiState.modalWindow.isOpened = !state.uiState.modalWindow.isOpened;
     },
   },
 });
 
-export const { addMessageSuccess, addMessageFailure, activateChannel } = chatSlice.actions;
+export const {
+  addMessageSuccess,
+  addMessageFailure,
+  addChannelSuccess,
+  addChannelFailure,
+  activateChannel,
+  toggleModalWindow,
+} = chatSlice.actions;
 
 export default chatSlice.reducer;
