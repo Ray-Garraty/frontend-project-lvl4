@@ -1,7 +1,9 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 import React from 'react';
 import cn from 'classnames';
 import axios from 'axios';
 import { Formik } from 'formik';
+import { isEmpty } from 'lodash';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -11,6 +13,7 @@ import {
   addChannelFailure,
   activateChannel,
   toggleModalWindow,
+  toggleChannelDropDownMenu,
 } from './app/slice';
 import routes from './routes';
 
@@ -42,6 +45,8 @@ const PermanentChannel = (props) => {
 const RemovableChannel = (props) => {
   const { currentChannelId, channel: { id, name } } = props;
   const isActive = id === currentChannelId ? 'btn-primary' : 'btn-light';
+  const channelDropDownMenuId = useSelector((state) => state.uiState.dropDownMenu.channelId);
+  const isDropDownOpened = id === channelDropDownMenuId;
   const firstButtonClassNames = cn(
     'text-left',
     'flex-grow-1',
@@ -56,29 +61,54 @@ const RemovableChannel = (props) => {
     'btn',
     { [isActive]: true },
   );
-  const dropDownDivStyles = {
+  const divDropDownGroupClassNames = cn(
+    'd-flex',
+    'mb-2',
+    'dropdown',
+    'btn-group',
+    { show: isDropDownOpened },
+  );
+
+  const closedDropdownDivStyles = {
     position: 'absolute',
-    top: '0px',
     margin: '0px',
+    top: '0px',
+    left: '0px',
     opacity: '0',
     pointerEvents: 'none',
   };
+  const openedDropdownDivStyles = {
+    position: 'absolute',
+    margin: '0px',
+    inset: '0px auto auto 0px',
+    transform: 'translate(69px, 44px)',
+  };
+
   const dispatch = useDispatch();
+  const handleDropDownMenu = (channelId) => (e) => {
+    e.stopPropagation();
+    dispatch(toggleChannelDropDownMenu(channelId));
+  };
+
   return (
     <li className="nav-item">
-      <div className="d-flex mb-2 dropdown btn-group" role="group">
+      <div className={divDropDownGroupClassNames} role="group">
         <button className={firstButtonClassNames} type="button" onClick={switchToChannel(id, dispatch)}>{name}</button>
         <button
           className={secondButtonClassNames}
           aria-haspopup="true"
-          aria-expanded="false"
+          aria-expanded={isDropDownOpened}
           type="button"
+          onClick={handleDropDownMenu(id)}
         />
         <div
-          className="dropdown-menu"
-          style={dropDownDivStyles}
+          className={cn('dropdown-menu', { show: isDropDownOpened })}
+          style={isDropDownOpened ? openedDropdownDivStyles : closedDropdownDivStyles }
           x-placement="bottom-start"
           aria-labelledby=""
+          data-popper-reference-hidden={isDropDownOpened ? 'false' : false}
+          data-popper-escape={isDropDownOpened ? 'false' : false}
+          data-popper-placement={isDropDownOpened ? 'bottom-start' : false}
         >
           <a className="dropdown-item" href="#" role="button">Remove</a>
           <a className="dropdown-item" href="#" role="button">Rename</a>
@@ -227,6 +257,8 @@ const Messages = () => {
 
 const Modal = () => {
   const dispatch = useDispatch();
+  const channels = useSelector((state) => Object.values(state.channels.byId));
+  const channelsNames = channels.map((channel) => channel.name);
   const toggleModal = (e) => {
     e.preventDefault();
     dispatch(toggleModalWindow());
@@ -259,6 +291,9 @@ const Modal = () => {
                   const errors = {};
                   if (!values.name) {
                     errors.name = 'Required';
+                  }
+                  if (channelsNames.includes(values.name)) {
+                    errors.name = 'Such channel already exists. Please choose another name';
                   }
                   return errors;
                 }}
@@ -306,7 +341,7 @@ const Modal = () => {
                         >
                           Cancel
                         </button>
-                        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
+                        <button className="btn btn-primary" type="submit" disabled={isSubmitting || !isEmpty(errors)}>
                           Submit
                         </button>
                       </div>
@@ -324,8 +359,13 @@ const Modal = () => {
 
 export default () => {
   const isModalOpened = useSelector((state) => state.uiState.modalWindow.isOpened);
+  const dispatch = useDispatch();
+  const handleDropDownMenu = (channelId) => (e) => {
+    e.stopPropagation();
+    dispatch(toggleChannelDropDownMenu(channelId));
+  };
   return (
-    <div className="row h-100 pb-3">
+    <div className="row h-100 pb-3" onClick={handleDropDownMenu()}>
       {isModalOpened && <Modal />}
       <Channels />
       <Messages />

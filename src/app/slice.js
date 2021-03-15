@@ -32,6 +32,9 @@ export const chatSlice = createSlice({
           isValid: true,
         },
       },
+      dropDownMenu: {
+        channelId: null,
+      },
     },
     channels: {
       byId: channelsById,
@@ -70,11 +73,19 @@ export const chatSlice = createSlice({
       state.channels.byId[id] = channel;
     },
     addChannelFailure: (state) => {
-      state.channels.uiState.modalWindow.error = 'Network error. Try again later';
+      state.uiState.modalWindow.error = 'Network error. Try again later';
       state.isNetworkOn = false;
     },
     toggleModalWindow: (state) => {
       state.uiState.modalWindow.isOpened = !state.uiState.modalWindow.isOpened;
+    },
+    toggleChannelDropDownMenu: (state, action) => {
+      const id = action.payload || null;
+      if (state.uiState.dropDownMenu.channelId === id) {
+        state.uiState.dropDownMenu.channelId = null;
+      } else {
+        state.uiState.dropDownMenu.channelId = id;
+      }
     },
   },
 });
@@ -86,6 +97,7 @@ export const {
   addChannelFailure,
   activateChannel,
   toggleModalWindow,
+  toggleChannelDropDownMenu,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
