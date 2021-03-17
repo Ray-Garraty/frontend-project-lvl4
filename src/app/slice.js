@@ -26,10 +26,16 @@ export const chatSlice = createSlice({
     currentChannelId,
     uiState: {
       modalWindow: {
-        isOpened: false,
-        error: null,
-        input: {
-          isValid: true,
+        addChannel: {
+          isOpened: false,
+          error: null,
+          input: {
+            isValid: true,
+          },
+        },
+        removeChannel: {
+          isOpened: false,
+          id: null,
         },
       },
       dropDownMenu: {
@@ -76,8 +82,17 @@ export const chatSlice = createSlice({
       state.uiState.modalWindow.error = 'Network error. Try again later';
       state.isNetworkOn = false;
     },
-    toggleModalWindow: (state) => {
-      state.uiState.modalWindow.isOpened = !state.uiState.modalWindow.isOpened;
+    openAddModal: (state) => {
+      state.uiState.modalWindow.addChannel.isOpened = true;
+    },
+    openRemoveModal: (state, action) => {
+      const id = action.payload;
+      state.uiState.modalWindow.removeChannel.isOpened = true;
+      state.uiState.modalWindow.removeChannel.id = id;
+    },
+    closeModalWindow: (state) => {
+      state.uiState.modalWindow.addChannel.isOpened = false;
+      state.uiState.modalWindow.removeChannel.isOpened = false;
     },
     toggleChannelDropDownMenu: (state, action) => {
       const id = action.payload || null;
@@ -96,7 +111,9 @@ export const {
   addChannelSuccess,
   addChannelFailure,
   activateChannel,
-  toggleModalWindow,
+  openAddModal,
+  openRemoveModal,
+  closeModalWindow,
   toggleChannelDropDownMenu,
 } = chatSlice.actions;
 

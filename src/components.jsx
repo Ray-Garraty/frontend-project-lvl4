@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable no-undef */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React from 'react';
 import cn from 'classnames';
@@ -12,7 +15,9 @@ import {
   addChannelSuccess,
   addChannelFailure,
   activateChannel,
-  toggleModalWindow,
+  openAddModal,
+  openRemoveModal,
+  closeModalWindow,
   toggleChannelDropDownMenu,
 } from './app/slice';
 import routes from './routes';
@@ -90,6 +95,11 @@ const RemovableChannel = (props) => {
     dispatch(toggleChannelDropDownMenu(channelId));
   };
 
+  const handleRemoveModal = (id) => (e) => {
+    e.preventDefault();
+    dispatch(openRemoveModal(id));
+  };
+
   return (
     <li className="nav-item">
       <div className={divDropDownGroupClassNames} role="group">
@@ -110,7 +120,7 @@ const RemovableChannel = (props) => {
           data-popper-escape={isDropDownOpened ? 'false' : false}
           data-popper-placement={isDropDownOpened ? 'bottom-start' : false}
         >
-          <a className="dropdown-item" href="#" role="button">Remove</a>
+          <a className="dropdown-item" href="#" role="button" onClick={handleRemoveModal(id)}>Remove</a>
           <a className="dropdown-item" href="#" role="button">Rename</a>
         </div>
       </div>
@@ -122,15 +132,15 @@ const Channels = () => {
   const channels = useSelector((state) => Object.values(state.channels.byId));
   const currentChannelId = useSelector((state) => state.currentChannelId);
   const dispatch = useDispatch();
-  const toggleModal = (e) => {
+  const handleAddModal = (e) => {
     e.preventDefault();
-    dispatch(toggleModalWindow());
+    dispatch(openAddModal());
   };
   return (
     <div className="col-3 border-right">
       <div className="d-flex mb-2">
         <span>Channels</span>
-        <button className="ml-auto p-0 btn btn-link" type="button" onClick={toggleModal}>+</button>
+        <button className="ml-auto p-0 btn btn-link" type="button" onClick={handleAddModal}>+</button>
       </div>
       <ul className="nav flex-column nav-pills nav-fill">
         {channels.map((channel) => (channel.removable
@@ -255,13 +265,13 @@ const Messages = () => {
   );
 };
 
-const Modal = () => {
+const ModalAddChannel = () => {
   const dispatch = useDispatch();
   const channels = useSelector((state) => Object.values(state.channels.byId));
   const channelsNames = channels.map((channel) => channel.name);
-  const toggleModal = (e) => {
+  const handleCloseModal = (e) => {
     e.preventDefault();
-    dispatch(toggleModalWindow());
+    dispatch(closeModalWindow());
   };
   return (
     <>
@@ -279,7 +289,7 @@ const Modal = () => {
               <div className="modal-title h4">
                 Add channel
               </div>
-              <button className="close" type="button" onClick={toggleModal}>
+              <button className="close" type="button" onClick={handleCloseModal}>
                 <span aria-hidden="true">x</span>
                 <span className="sr-only">Close</span>
               </button>
@@ -306,7 +316,7 @@ const Modal = () => {
                     dispatch(addChannelSuccess(attributes));
                     setSubmitting(false);
                     resetForm();
-                    dispatch(toggleModalWindow());
+                    dispatch(closeModalWindow());
                   } catch (e) {
                     console.log(e);
                     dispatch(addChannelFailure());
@@ -337,7 +347,7 @@ const Modal = () => {
                         <button
                           className="mr-2 btn btn-secondary"
                           type="button"
-                          onClick={toggleModal}
+                          onClick={handleCloseModal}
                         >
                           Cancel
                         </button>
@@ -357,8 +367,58 @@ const Modal = () => {
   );
 };
 
+const ModalRemoveChannel = () => {
+  const channelId = useSelector((state) => state.uiState.modalWindow.removeChannel.id);
+  const dispatch = useDispatch();
+  const closeModal = (e) => {
+    e.preventDefault();
+    dispatch(closeModalWindow());
+  };
+  const removeChannel = (id) => (e) => {
+    e.preventDefault();
+    console.log('Удаляю канал ', id);
+  };
+  return (
+    <>
+      <div className="fade modal-backdrop show" />
+      <div
+        className="fade modal show"
+        role="dialog"
+        aria-modal="true"
+        tabIndex="-1"
+        style={{ display: 'block' }}
+      >
+        <div className="modal-dialog" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <div className="modal-title h4">
+                Remove channel
+                {channelId}
+              </div>
+              <button className="close" type="button" onClick={closeModal}>
+                <span aria-hidden="true">x</span>
+                <span className="sr-only">Close</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              Are you sure?
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" type="button" onClick={closeModal}>Close</button>
+              <button className="btn btn-primary" type="button" onClick={removeChannel(channelId)}>Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 export default () => {
-  const isModalOpened = useSelector((state) => state.uiState.modalWindow.isOpened);
+  const isAddModalOpened = useSelector((state) => state.uiState.modalWindow.addChannel.isOpened);
+  const isRemoveModalOpened = useSelector(
+    (state) => state.uiState.modalWindow.removeChannel.isOpened,
+  );
   const dispatch = useDispatch();
   const handleDropDownMenu = (channelId) => (e) => {
     e.stopPropagation();
@@ -366,7 +426,8 @@ export default () => {
   };
   return (
     <div className="row h-100 pb-3" onClick={handleDropDownMenu()}>
-      {isModalOpened && <Modal />}
+      {isAddModalOpened && <ModalAddChannel />}
+      {isRemoveModalOpened && <ModalRemoveChannel />}
       <Channels />
       <Messages />
     </div>
