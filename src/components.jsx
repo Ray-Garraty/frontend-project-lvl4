@@ -6,14 +6,19 @@ import React from 'react';
 import cn from 'classnames';
 import axios from 'axios';
 import { Formik } from 'formik';
-import { isEmpty } from 'lodash';
+import { isEmpty, get } from 'lodash';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  onRequestPending,
+  onRequestSuccess,
+  onRequestFailure,
   addMessageSuccess,
   addMessageFailure,
   addChannelSuccess,
   addChannelFailure,
+  removeChannelSuccess,
+  removeChannelFailure,
   activateChannel,
   openAddModal,
   openRemoveModal,
@@ -208,15 +213,18 @@ const Messages = () => {
                     },
                   };
                   try {
+                    dispatch(onRequestPending());
                     const response = await axios
                       .post(routes.channelMessagesPath(channelId), request);
                     const { data: { attributes } } = response.data;
                     dispatch(addMessageSuccess(attributes));
                     setSubmitting(false);
                     resetForm();
+                    dispatch(onRequestSuccess());
                   } catch (e) {
                     dispatch(addMessageFailure());
                     setSubmitting(false);
+                    dispatch(onRequestFailure());
                   }
                 }}
               >
@@ -267,8 +275,11 @@ const Messages = () => {
 
 const ModalAddChannel = () => {
   const dispatch = useDispatch();
+  const isNetworkOn = useSelector((state) => state.isNetworkOn);
   const channels = useSelector((state) => Object.values(state.channels.byId));
   const channelsNames = channels.map((channel) => channel.name);
+  const requestStatus = useSelector((state) => state.request);
+  const pendingRequest = requestStatus === 'sending';
   const handleCloseModal = (e) => {
     e.preventDefault();
     dispatch(closeModalWindow());
@@ -289,7 +300,7 @@ const ModalAddChannel = () => {
               <div className="modal-title h4">
                 Add channel
               </div>
-              <button className="close" type="button" onClick={handleCloseModal}>
+              <button className="close" type="button" onClick={handleCloseModal} disabled={pendingRequest}>
                 <span aria-hidden="true">x</span>
                 <span className="sr-only">Close</span>
               </button>
@@ -310,17 +321,22 @@ const ModalAddChannel = () => {
                 onSubmit={async ({ name }, { setSubmitting, resetForm }) => {
                   const request = { data: { attributes: { name } } };
                   try {
+                    dispatch(onRequestPending());
                     const response = await axios
                       .post(routes.channelsPath(), request);
                     const { data: { attributes } } = response.data;
-                    dispatch(addChannelSuccess(attributes));
+                    const newChannel = { ...attributes, messagesIds: [] };
+                    dispatch(addChannelSuccess(newChannel));
+                    dispatch(onRequestSuccess());
                     setSubmitting(false);
                     resetForm();
                     dispatch(closeModalWindow());
+                    dispatch(activateChannel(newChannel.id));
                   } catch (e) {
                     console.log(e);
                     dispatch(addChannelFailure());
                     setSubmitting(false);
+                    dispatch(onRequestFailure());
                   }
                 }}
               >
@@ -360,6 +376,11 @@ const ModalAddChannel = () => {
                 )}
               </Formik>
             </div>
+            <div className="modal-footer">
+              <div className="d-block invalid-feedback">
+                {isNetworkOn ? '' : 'Network error. Please try again later'}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -368,15 +389,31 @@ const ModalAddChannel = () => {
 };
 
 const ModalRemoveChannel = () => {
+  const isNetworkOn = useSelector((state) => state.isNetworkOn);
   const channelId = useSelector((state) => state.uiState.modalWindow.removeChannel.id);
+  const channels = useSelector((state) => state.channels.byId);
+  const channelToRemove = (Object.values(channels)).find((channel) => channel.id === channelId);
+  const name = get(channelToRemove, 'name', null);
   const dispatch = useDispatch();
+  const requestStatus = useSelector((state) => state.request);
+  const pendingRequest = requestStatus === 'sending';
   const closeModal = (e) => {
     e.preventDefault();
     dispatch(closeModalWindow());
   };
-  const removeChannel = (id) => (e) => {
+  const removeChannel = (id) => async (e) => {
     e.preventDefault();
-    console.log('Удаляю канал ', id);
+    try {
+      dispatch(onRequestPending());
+      await axios.delete(routes.channelPath(id));
+      dispatch(removeChannelSuccess(id));
+      dispatch(closeModalWindow());
+      dispatch(onRequestSuccess());
+    } catch (e) {
+      console.log(e);
+      dispatch(removeChannelFailure());
+      dispatch(onRequestFailure());
+    }
   };
   return (
     <>
@@ -392,8 +429,9 @@ const ModalRemoveChannel = () => {
           <div className="modal-content">
             <div className="modal-header">
               <div className="modal-title h4">
-                Remove channel
-                {channelId}
+                Remove channel &quot;
+                {name}
+                &quot;
               </div>
               <button className="close" type="button" onClick={closeModal}>
                 <span aria-hidden="true">x</span>
@@ -405,7 +443,10 @@ const ModalRemoveChannel = () => {
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" type="button" onClick={closeModal}>Close</button>
-              <button className="btn btn-primary" type="button" onClick={removeChannel(channelId)}>Remove</button>
+              <button className="btn btn-primary" type="button" onClick={removeChannel(channelId)} disabled={pendingRequest}>Remove</button>
+              <div className="d-block invalid-feedback">
+                {isNetworkOn ? '' : 'Network error. Please try again later'}
+              </div>
             </div>
           </div>
         </div>

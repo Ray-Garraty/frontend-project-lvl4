@@ -22,6 +22,7 @@ const allMessagesIds = Object.keys(messagesById).sort((a, b) => a - b);
 export const chatSlice = createSlice({
   name: 'chat',
   initialState: {
+    request: 'idle',
     isNetworkOn: true,
     currentChannelId,
     uiState: {
@@ -52,6 +53,15 @@ export const chatSlice = createSlice({
     },
   },
   reducers: {
+    onRequestPending: (state) => {
+      state.request = 'sending';
+    },
+    onRequestSuccess: (state) => {
+      state.request = 'success';
+    },
+    onRequestFailure: (state) => {
+      state.request = 'failure';
+    },
     addMessageSuccess: (state, action) => {
       try {
         state.isNetworkOn = true;
@@ -82,6 +92,22 @@ export const chatSlice = createSlice({
       state.uiState.modalWindow.error = 'Network error. Try again later';
       state.isNetworkOn = false;
     },
+    removeChannelSuccess: (state, action) => {
+      state.isNetworkOn = true;
+      const id = action.payload;
+      const channelMessagesIds = state.channels.byId[id].messagesIds;
+      const { [id]: channel, ...otherChannels } = state.channels.byId;
+      state.channels.byId = otherChannels;
+      channelMessagesIds.forEach((messageId) => {
+        const { [messageId]: message, ...otherMessages } = state.messages.byId;
+        state.messages.byId = otherMessages;
+        state.messages.allIds = state.messages.allIds.filter((id) => id !== messageId);
+      });
+    },
+    removeChannelFailure: (state) => {
+      state.uiState.modalWindow.error = 'Network error. Try again later';
+      state.isNetworkOn = false;
+    },
     openAddModal: (state) => {
       state.uiState.modalWindow.addChannel.isOpened = true;
     },
@@ -106,10 +132,15 @@ export const chatSlice = createSlice({
 });
 
 export const {
+  onRequestPending,
+  onRequestSuccess,
+  onRequestFailure,
   addMessageSuccess,
   addMessageFailure,
   addChannelSuccess,
   addChannelFailure,
+  removeChannelSuccess,
+  removeChannelFailure,
   activateChannel,
   openAddModal,
   openRemoveModal,
