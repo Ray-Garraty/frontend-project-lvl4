@@ -1,8 +1,7 @@
 /* eslint-disable no-param-reassign */
 import gon from 'gon';
-import { createSlice, current } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-// console.log('gon в слайсе: ', gon);
 const { currentChannelId } = gon;
 const channelsById = {};
 gon.channels.forEach((channel) => {
@@ -35,6 +34,10 @@ export const chatSlice = createSlice({
           },
         },
         removeChannel: {
+          isOpened: false,
+          id: null,
+        },
+        renameChannel: {
           isOpened: false,
           id: null,
         },
@@ -108,6 +111,14 @@ export const chatSlice = createSlice({
       state.uiState.modalWindow.error = 'Network error. Try again later';
       state.isNetworkOn = false;
     },
+    renameChannelSuccess: (state, action) => {
+      const { id, name } = action.payload;
+      state.channels.byId[id].name = name;
+    },
+    renameChannelFailure: (state) => {
+      state.uiState.modalWindow.error = 'Network error. Try again later';
+      state.isNetworkOn = false;
+    },
     openAddModal: (state) => {
       state.uiState.modalWindow.addChannel.isOpened = true;
     },
@@ -116,9 +127,15 @@ export const chatSlice = createSlice({
       state.uiState.modalWindow.removeChannel.isOpened = true;
       state.uiState.modalWindow.removeChannel.id = id;
     },
+    openRenameModal: (state, action) => {
+      const id = action.payload;
+      state.uiState.modalWindow.renameChannel.isOpened = true;
+      state.uiState.modalWindow.renameChannel.id = id;
+    },
     closeModalWindow: (state) => {
       state.uiState.modalWindow.addChannel.isOpened = false;
       state.uiState.modalWindow.removeChannel.isOpened = false;
+      state.uiState.modalWindow.renameChannel.isOpened = false;
     },
     toggleChannelDropDownMenu: (state, action) => {
       const id = action.payload || null;
@@ -141,9 +158,12 @@ export const {
   addChannelFailure,
   removeChannelSuccess,
   removeChannelFailure,
+  renameChannelSuccess,
+  renameChannelFailure,
   activateChannel,
   openAddModal,
   openRemoveModal,
+  openRenameModal,
   closeModalWindow,
   toggleChannelDropDownMenu,
 } = chatSlice.actions;

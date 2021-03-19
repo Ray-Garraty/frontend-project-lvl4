@@ -19,9 +19,12 @@ import {
   addChannelFailure,
   removeChannelSuccess,
   removeChannelFailure,
+  renameChannelSuccess,
+  renameChannelFailure,
   activateChannel,
   openAddModal,
   openRemoveModal,
+  openRenameModal,
   closeModalWindow,
   toggleChannelDropDownMenu,
 } from './app/slice';
@@ -105,6 +108,11 @@ const RemovableChannel = (props) => {
     dispatch(openRemoveModal(id));
   };
 
+  const handleRenameModal = (id) => (e) => {
+    e.preventDefault();
+    dispatch(openRenameModal(id));
+  };
+
   return (
     <li className="nav-item">
       <div className={divDropDownGroupClassNames} role="group">
@@ -118,7 +126,7 @@ const RemovableChannel = (props) => {
         />
         <div
           className={cn('dropdown-menu', { show: isDropDownOpened })}
-          style={isDropDownOpened ? openedDropdownDivStyles : closedDropdownDivStyles }
+          style={isDropDownOpened ? openedDropdownDivStyles : closedDropdownDivStyles}
           x-placement="bottom-start"
           aria-labelledby=""
           data-popper-reference-hidden={isDropDownOpened ? 'false' : false}
@@ -126,7 +134,7 @@ const RemovableChannel = (props) => {
           data-popper-placement={isDropDownOpened ? 'bottom-start' : false}
         >
           <a className="dropdown-item" href="#" role="button" onClick={handleRemoveModal(id)}>Remove</a>
-          <a className="dropdown-item" href="#" role="button">Rename</a>
+          <a className="dropdown-item" href="#" role="button" onClick={handleRenameModal(id)}>Rename</a>
         </div>
       </div>
     </li>
@@ -351,6 +359,7 @@ const ModalAddChannel = () => {
                   <form onSubmit={handleSubmit} noValidate>
                     <div className="form-group">
                       <input
+                        autoFocus
                         className={cn('mb-2', 'form-control', { 'is-invalid': errors.name })}
                         required
                         name="name"
@@ -455,10 +464,134 @@ const ModalRemoveChannel = () => {
   );
 };
 
+const ModalRenameChannel = () => {
+  const dispatch = useDispatch();
+  const isNetworkOn = useSelector((state) => state.isNetworkOn);
+  const channels = useSelector((state) => Object.values(state.channels.byId));
+  const channelId = useSelector((state) => state.uiState.modalWindow.renameChannel.id);
+  const [channelName] = channels
+    .filter((channel) => channel.id === channelId)
+    .map((channel) => channel.name);
+  const channelsNames = channels.map((channel) => channel.name);
+  const requestStatus = useSelector((state) => state.request);
+  const pendingRequest = requestStatus === 'sending';
+  const handleCloseModal = (e) => {
+    e.preventDefault();
+    dispatch(closeModalWindow());
+  };
+  return (
+    <>
+      <div className="fade modal-backdrop show" />
+      <div
+        className="fade modal show"
+        role="dialog"
+        aria-modal="true"
+        tabIndex="-1"
+        style={{ display: 'block' }}
+      >
+        <div className="modal-dialog" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <div className="modal-title h4">
+                Rename channel
+              </div>
+              <button className="close" type="button" onClick={handleCloseModal} disabled={pendingRequest}>
+                <span aria-hidden="true">x</span>
+                <span className="sr-only">Close</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <Formik
+                initialValues={{ name: '' }}
+                validate={(values) => {
+                  const errors = {};
+                  if (!values.name) {
+                    errors.name = 'Required';
+                  }
+                  if (channelName === values.name) {
+                    errors.name = 'Please enter a new channel name';
+                  } else if (channelsNames.includes(values.name)) {
+                    errors.name = 'Such channel already exists. Please choose another name';
+                  }
+                  return errors;
+                }}
+                onSubmit={async ({ name }, { setSubmitting, resetForm }) => {
+                  const request = { data: { attributes: { name } } };
+                  try {
+                    dispatch(onRequestPending());
+                    const response = await axios
+                      .patch(routes.channelPath(channelId), request);
+                    const { data: { attributes } } = response.data;
+                    dispatch(renameChannelSuccess(attributes));
+                    dispatch(onRequestSuccess());
+                    setSubmitting(false);
+                    resetForm();
+                    dispatch(closeModalWindow());
+                    dispatch(activateChannel(channelId));
+                  } catch (e) {
+                    console.log(e);
+                    dispatch(renameChannelFailure());
+                    setSubmitting(false);
+                    dispatch(onRequestFailure());
+                  }
+                }}
+              >
+                {({
+                  values: { name },
+                  errors,
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  isSubmitting,
+                }) => (
+                  <form onSubmit={handleSubmit} noValidate>
+                    <div className="form-group">
+                      <input
+                        autoFocus
+                        className={cn('mb-2', 'form-control', { 'is-invalid': errors.name })}
+                        required
+                        name="name"
+                        value={name}
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                      />
+                      {errors.name && <div className="d-block mb-2 invalid-feedback">{errors.name}</div>}
+                      <div className="d-flex justify-content-end">
+                        <button
+                          className="mr-2 btn btn-secondary"
+                          type="button"
+                          onClick={handleCloseModal}
+                        >
+                          Cancel
+                        </button>
+                        <button className="btn btn-primary" type="submit" disabled={isSubmitting || !isEmpty(errors)}>
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
+              </Formik>
+            </div>
+            <div className="modal-footer">
+              <div className="d-block invalid-feedback">
+                {isNetworkOn ? '' : 'Network error. Please try again later'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 export default () => {
   const isAddModalOpened = useSelector((state) => state.uiState.modalWindow.addChannel.isOpened);
   const isRemoveModalOpened = useSelector(
     (state) => state.uiState.modalWindow.removeChannel.isOpened,
+  );
+  const isRenameModalOpened = useSelector(
+    (state) => state.uiState.modalWindow.renameChannel.isOpened,
   );
   const dispatch = useDispatch();
   const handleDropDownMenu = (channelId) => (e) => {
@@ -469,6 +602,7 @@ export default () => {
     <div className="row h-100 pb-3" onClick={handleDropDownMenu()}>
       {isAddModalOpened && <ModalAddChannel />}
       {isRemoveModalOpened && <ModalRemoveChannel />}
+      {isRenameModalOpened && <ModalRenameChannel />}
       <Channels />
       <Messages />
     </div>
