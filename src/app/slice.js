@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import gon from 'gon';
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, current } from '@reduxjs/toolkit';
 
 const { currentChannelId } = gon;
 const channelsById = {};
@@ -71,6 +71,7 @@ export const chatSlice = createSlice({
         const message = action.payload;
         const { channelId } = message;
         const channelMessagesIds = state.channels.byId[channelId].messagesIds;
+        // console.log(channelMessagesIds);
         state.channels.byId[channelId].messagesIds = [...channelMessagesIds, message.id];
         state.messages.byId[message.id] = message;
         state.messages.allIds = [...state.messages.allIds, message.id];
@@ -87,9 +88,12 @@ export const chatSlice = createSlice({
     },
     addChannelSuccess: (state, action) => {
       state.isNetworkOn = true;
-      const channel = action.payload;
+      const channel = { ...action.payload, messagesIds: [] };
       const { id } = channel;
       state.channels.byId[id] = channel;
+      if (!state.channels.allIds.includes(id.toString())) {
+        state.channels.allIds = [...state.channels.allIds, id.toString()];
+      }
     },
     addChannelFailure: (state) => {
       state.uiState.modalWindow.error = 'Network error. Try again later';
@@ -98,14 +102,19 @@ export const chatSlice = createSlice({
     removeChannelSuccess: (state, action) => {
       state.isNetworkOn = true;
       const id = action.payload;
-      const channelMessagesIds = state.channels.byId[id].messagesIds;
-      const { [id]: channel, ...otherChannels } = state.channels.byId;
-      state.channels.byId = otherChannels;
-      channelMessagesIds.forEach((messageId) => {
-        const { [messageId]: message, ...otherMessages } = state.messages.byId;
-        state.messages.byId = otherMessages;
-        state.messages.allIds = state.messages.allIds.filter((id) => id !== messageId);
-      });
+      const channelsIds = Object.keys(state.channels.byId);
+      if (channelsIds.includes(id.toString())) {
+        const channelMessagesIds = state.channels.byId[id].messagesIds;
+        const { [id]: channel, ...otherChannels } = state.channels.byId;
+        state.channels.byId = otherChannels;
+        state.channels.allIds = state.channels.allIds
+          .filter((channelId) => channelId !== id.toString());
+        channelMessagesIds.forEach((messageId) => {
+          const { [messageId]: message, ...otherMessages } = state.messages.byId;
+          state.messages.byId = otherMessages;
+          state.messages.allIds = state.messages.allIds.filter((id) => id !== messageId);
+        });
+      }
     },
     removeChannelFailure: (state) => {
       state.uiState.modalWindow.error = 'Network error. Try again later';

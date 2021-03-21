@@ -32,6 +32,10 @@ import routes from './routes';
 
 export const AuthorContext = React.createContext('Anonymous');
 
+const isProduction = process.env.NODE_ENV === 'production';
+const domain = isProduction ? '' : 'http://localhost:5000';
+const socket = io(domain);
+
 const switchToChannel = (id, handler) => () => {
   handler(activateChannel(id));
 };
@@ -145,6 +149,19 @@ const Channels = () => {
   const channels = useSelector((state) => Object.values(state.channels.byId));
   const currentChannelId = useSelector((state) => state.currentChannelId);
   const dispatch = useDispatch();
+
+  socket.on('newChannel', ({ data: { attributes } }) => {
+    dispatch(addChannelSuccess(attributes));
+  });
+
+  socket.on('removeChannel', ({ data: { id } }) => {
+    dispatch(removeChannelSuccess(id));
+  });
+
+  socket.on('renameChannel', ({ data: { attributes } }) => {
+    dispatch(renameChannelSuccess(attributes));
+  });
+
   const handleAddModal = (e) => {
     e.preventDefault();
     dispatch(openAddModal());
@@ -187,7 +204,6 @@ const Messages = () => {
   const channelId = useSelector((state) => state.currentChannelId);
   const isNetworkOn = useSelector((state) => state.isNetworkOn);
   // console.log('messages внутри компонента Messages: ', messages);
-  const socket = io('http://localhost:5000');
   socket.on('newMessage', ({ data: { attributes } }) => {
     dispatch(addMessageSuccess(attributes));
   });
@@ -415,7 +431,7 @@ const ModalRemoveChannel = () => {
     try {
       dispatch(onRequestPending());
       await axios.delete(routes.channelPath(id));
-      dispatch(removeChannelSuccess(id));
+      // dispatch(removeChannelSuccess(id));
       dispatch(closeModalWindow());
       dispatch(onRequestSuccess());
     } catch (e) {
