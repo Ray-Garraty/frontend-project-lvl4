@@ -1,6 +1,6 @@
 [![Github Actions Status](https://github.com/Ray-Garraty/frontend-project-lvl4/workflows/Node%20CI/badge.svg)](https://github.com/Ray-Garraty/frontend-project-lvl4/actions)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/e65582e1efb52d14a0a5/maintainability)](https://codeclimate.com/github/Ray-Garraty/frontend-project-lvl4-remastered/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/ae30ea218b986cee7e8c/maintainability)](https://codeclimate.com/github/Ray-Garraty/frontend-project-lvl4/maintainability)
 
 [Деплой на Хероку](https://slackers-chat.herokuapp.com/)
 
