@@ -1,15 +1,17 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-undef */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React from 'react';
 import cn from 'classnames';
-import axios from 'axios';
+import i18next from 'i18next';
 import { Formik } from 'formik';
-import { isEmpty, get } from 'lodash';
+import { isEmpty, get, uniqueId } from 'lodash';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  logout,
   onRequestPending,
   onRequestSuccess,
   onRequestFailure,
@@ -27,14 +29,11 @@ import {
   openRenameModal,
   closeModalWindow,
   toggleChannelDropDownMenu,
-} from './app/slice';
-import routes from './routes';
-
-export const AuthorContext = React.createContext('Anonymous');
+} from './slice.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';
-const socket = io(domain);
+export const socket = io(domain);
 
 const switchToChannel = (id, handler) => () => {
   handler(activateChannel(id));
@@ -137,8 +136,8 @@ const RemovableChannel = (props) => {
           data-popper-escape={isDropDownOpened ? 'false' : false}
           data-popper-placement={isDropDownOpened ? 'bottom-start' : false}
         >
-          <a className="dropdown-item" href="#" role="button" onClick={handleRemoveModal(id)}>Remove</a>
-          <a className="dropdown-item" href="#" role="button" onClick={handleRenameModal(id)}>Rename</a>
+          <a className="dropdown-item" href="#" role="button" onClick={handleRemoveModal(id)}>{i18next.t('remove')}</a>
+          <a className="dropdown-item" href="#" role="button" onClick={handleRenameModal(id)}>{i18next.t('rename')}</a>
         </div>
       </div>
     </li>
@@ -150,16 +149,16 @@ const Channels = () => {
   const currentChannelId = useSelector((state) => state.currentChannelId);
   const dispatch = useDispatch();
 
-  socket.on('newChannel', ({ data: { attributes } }) => {
-    dispatch(addChannelSuccess(attributes));
+  socket.on('newChannel', (data) => {
+    dispatch(addChannelSuccess(data));
   });
 
-  socket.on('removeChannel', ({ data: { id } }) => {
-    dispatch(removeChannelSuccess(id));
+  socket.on('removeChannel', (data) => {
+    dispatch(removeChannelSuccess(data));
   });
 
-  socket.on('renameChannel', ({ data: { attributes } }) => {
-    dispatch(renameChannelSuccess(attributes));
+  socket.on('renameChannel', (data) => {
+    dispatch(renameChannelSuccess(data));
   });
 
   const handleAddModal = (e) => {
@@ -169,7 +168,7 @@ const Channels = () => {
   return (
     <div className="col-3 border-right">
       <div className="d-flex mb-2">
-        <span>Channels</span>
+        <span>{i18next.t('channels')}</span>
         <button className="ml-auto p-0 btn btn-link" type="button" onClick={handleAddModal}>+</button>
       </div>
       <ul className="nav flex-column nav-pills nav-fill">
@@ -199,101 +198,96 @@ const Messages = () => {
   const currentChannelMessages = useSelector((state) => {
     const { currentChannelId } = state;
     const allMessages = Object.values(state.messages.byId);
-    return allMessages.filter(({ channelId }) => channelId === currentChannelId);
+    return allMessages.filter((msg) => {
+      if (!msg) {
+        return false;
+      }
+      return msg.channelId === currentChannelId;
+    });
   });
   const channelId = useSelector((state) => state.currentChannelId);
   const isNetworkOn = useSelector((state) => state.isNetworkOn);
+  const username = useSelector((state) => state.authState.activeUser.username);
   // console.log('messages внутри компонента Messages: ', messages);
-  socket.on('newMessage', ({ data: { attributes } }) => {
-    dispatch(addMessageSuccess(attributes));
+  socket.on('newMessage', (data) => {
+    dispatch(addMessageSuccess(data));
   });
 
   return (
-    <AuthorContext.Consumer>
-      {(author) => (
-        <div className="col h-100">
-          <div className="d-flex flex-column h-100">
-            <div id="messages-box" className="chat-messages overflow-auto mb-3">
-              {currentChannelMessages.map(({ author, text, id }) => (
-                <div className="text-break" key={id}>
-                  <b>{author}</b>
-                  :&nbsp;
-                  {text}
-                </div>
-              ))}
+    <div className="col h-100">
+      <div className="d-flex flex-column h-100">
+        <div id="messages-box" className="chat-messages overflow-auto mb-3">
+          {currentChannelMessages.map(({ username, text }) => (
+            <div className="text-break" key={uniqueId()}>
+              <b>{username}</b>
+              :&nbsp;
+              {text}
             </div>
-            <div className="mt-auto">
-              <Formik
-                initialValues={{ text: '' }}
-                onSubmit={async (values, { setSubmitting, resetForm }) => {
-                // console.log('Вы ввели: ', values.text);
-                  const request = {
-                    data: {
-                      attributes: {
-                        author,
-                        text: values.text,
-                        channelId,
-                      },
-                    },
-                  };
-                  try {
-                    dispatch(onRequestPending());
-                    const response = await axios
-                      .post(routes.channelMessagesPath(channelId), request);
-                    const { data: { attributes } } = response.data;
-                    dispatch(addMessageSuccess(attributes));
-                    setSubmitting(false);
-                    resetForm();
-                    dispatch(onRequestSuccess());
-                  } catch (e) {
-                    dispatch(addMessageFailure());
-                    setSubmitting(false);
-                    dispatch(onRequestFailure());
-                  }
-                }}
-              >
-                {({
-                  values,
-                  errors,
-                  touched,
-                  handleChange,
-                  handleBlur,
-                  handleSubmit,
-                  isSubmitting,
-                }) => (
-                  <form onSubmit={handleSubmit} noValidate>
-                    <div className="form-group">
-                      <div className="input-group">
-                        <input
-                          name="text"
-                          aria-label="body"
-                          className="mr-2 form-control"
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          value={values.text}
-                        />
-                        {errors.text && touched.text}
-                        <button
-                          type="submit"
-                          aria-label="submit"
-                          className="btn btn-primary"
-                          disabled={isSubmitting}
-                        >
-                          Submit
-                        </button>
-                      </div>
-                      <div className="d-block invalid-feedback">
-                        {isNetworkOn ? '' : 'Network error. Please try again later'}
-                      </div>
-                    </div>
-                  </form>
-                )}
-              </Formik>
-            </div>
-          </div>
+          ))}
         </div>
-      )}
-    </AuthorContext.Consumer>
+        <div className="mt-auto">
+          <Formik
+            initialValues={{ text: '' }}
+            onSubmit={async (values, { setSubmitting, resetForm }) => {
+              const message = {
+                username,
+                text: values.text,
+                channelId,
+              };
+              try {
+                dispatch(onRequestPending());
+                await socket.emit('newMessage', { message }, () => {
+                  setSubmitting(false);
+                  resetForm();
+                  dispatch(onRequestSuccess());
+                });
+              } catch (e) {
+                dispatch(addMessageFailure());
+                setSubmitting(false);
+                dispatch(onRequestFailure());
+              }
+            }}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              isSubmitting,
+            }) => (
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="form-group">
+                  <div className="input-group">
+                    <input
+                      name="text"
+                      aria-label="body"
+                      className="mr-2 form-control"
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.text}
+                    />
+                    {errors.text && touched.text}
+                    <button
+                      type="submit"
+                      aria-label="submit"
+                      className="btn btn-primary"
+                      disabled={isSubmitting}
+                    >
+                      {i18next.t('submit')}
+                    </button>
+                  </div>
+                  <div className="d-block invalid-feedback">
+                    {isNetworkOn ? '' : i18next.t('networkError')}
+                  </div>
+                </div>
+              </form>
+            )}
+          </Formik>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -322,11 +316,11 @@ const ModalAddChannel = () => {
           <div className="modal-content">
             <div className="modal-header">
               <div className="modal-title h4">
-                Add channel
+                {i18next.t('addChannel')}
               </div>
               <button className="close" type="button" onClick={handleCloseModal} disabled={pendingRequest}>
                 <span aria-hidden="true">x</span>
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{i18next.t('cancel')}</span>
               </button>
             </div>
             <div className="modal-body">
@@ -335,27 +329,25 @@ const ModalAddChannel = () => {
                 validate={(values) => {
                   const errors = {};
                   if (!values.name) {
-                    errors.name = 'Required';
+                    errors.name = i18next.t('required');
                   }
                   if (channelsNames.includes(values.name)) {
-                    errors.name = 'Such channel already exists. Please choose another name';
+                    errors.name = i18next.t('channelAlreadyExists');
                   }
                   return errors;
                 }}
                 onSubmit={async ({ name }, { setSubmitting, resetForm }) => {
-                  const request = { data: { attributes: { name } } };
                   try {
                     dispatch(onRequestPending());
-                    const response = await axios
-                      .post(routes.channelsPath(), request);
-                    const { data: { attributes } } = response.data;
-                    const newChannel = { ...attributes, messagesIds: [] };
-                    dispatch(addChannelSuccess(newChannel));
-                    dispatch(onRequestSuccess());
-                    setSubmitting(false);
-                    resetForm();
-                    dispatch(closeModalWindow());
-                    dispatch(activateChannel(newChannel.id));
+                    await socket.emit('newChannel', { name }, ({ data }) => {
+                      const newChannel = { ...data, messagesIds: [] };
+                      dispatch(addChannelSuccess(newChannel));
+                      dispatch(onRequestSuccess());
+                      setSubmitting(false);
+                      resetForm();
+                      dispatch(closeModalWindow());
+                      dispatch(activateChannel(newChannel.id));
+                    });
                   } catch (e) {
                     console.log(e);
                     dispatch(addChannelFailure());
@@ -390,10 +382,10 @@ const ModalAddChannel = () => {
                           type="button"
                           onClick={handleCloseModal}
                         >
-                          Cancel
+                          {i18next.t('cancel')}
                         </button>
                         <button className="btn btn-primary" type="submit" disabled={isSubmitting || !isEmpty(errors)}>
-                          Submit
+                          {i18next.t('submit')}
                         </button>
                       </div>
                     </div>
@@ -403,7 +395,7 @@ const ModalAddChannel = () => {
             </div>
             <div className="modal-footer">
               <div className="d-block invalid-feedback">
-                {isNetworkOn ? '' : 'Network error. Please try again later'}
+                {isNetworkOn ? '' : i18next.t('networkError')}
               </div>
             </div>
           </div>
@@ -430,12 +422,15 @@ const ModalRemoveChannel = () => {
     e.preventDefault();
     try {
       dispatch(onRequestPending());
-      await axios.delete(routes.channelPath(id));
-      // dispatch(removeChannelSuccess(id));
-      dispatch(closeModalWindow());
-      dispatch(onRequestSuccess());
-    } catch (e) {
-      console.log(e);
+      socket.emit('removeChannel', { id: channelId }, ({ status }) => {
+        if (status === 'ok') {
+          dispatch(removeChannelSuccess(id));
+          dispatch(closeModalWindow());
+          dispatch(onRequestSuccess());
+        }
+      });
+    } catch (err) {
+      console.log(err);
       dispatch(removeChannelFailure());
       dispatch(onRequestFailure());
     }
@@ -454,23 +449,25 @@ const ModalRemoveChannel = () => {
           <div className="modal-content">
             <div className="modal-header">
               <div className="modal-title h4">
-                Remove channel &quot;
+                {i18next.t('removeChannel')}
+                {' '}
+                &quot;
                 {name}
                 &quot;
               </div>
               <button className="close" type="button" onClick={closeModal}>
                 <span aria-hidden="true">x</span>
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{i18next.t('close')}</span>
               </button>
             </div>
             <div className="modal-body">
-              Are you sure?
+              {i18next.t('areYouSure')}
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" type="button" onClick={closeModal}>Close</button>
-              <button className="btn btn-primary" type="button" onClick={removeChannel(channelId)} disabled={pendingRequest}>Remove</button>
+              <button className="btn btn-secondary" type="button" onClick={closeModal}>{i18next.t('cancel')}</button>
+              <button className="btn btn-danger" type="button" onClick={removeChannel(channelId)} disabled={pendingRequest}>{i18next.t('remove')}</button>
               <div className="d-block invalid-feedback">
-                {isNetworkOn ? '' : 'Network error. Please try again later'}
+                {isNetworkOn ? '' : i18next.t('networkError')}
               </div>
             </div>
           </div>
@@ -509,11 +506,11 @@ const ModalRenameChannel = () => {
           <div className="modal-content">
             <div className="modal-header">
               <div className="modal-title h4">
-                Rename channel
+                {i18next.t('renameChannel')}
               </div>
               <button className="close" type="button" onClick={handleCloseModal} disabled={pendingRequest}>
                 <span aria-hidden="true">x</span>
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{i18next.t('close')}</span>
               </button>
             </div>
             <div className="modal-body">
@@ -522,28 +519,26 @@ const ModalRenameChannel = () => {
                 validate={(values) => {
                   const errors = {};
                   if (!values.name) {
-                    errors.name = 'Required';
+                    errors.name = i18next.t('required');
                   }
-                  if (channelName === values.name) {
-                    errors.name = 'Please enter a new channel name';
-                  } else if (channelsNames.includes(values.name)) {
-                    errors.name = 'Such channel already exists. Please choose another name';
+                  if (channelName === values.name || channelsNames.includes(values.name)) {
+                    errors.name = i18next.t('channelAlreadyExists');
                   }
                   return errors;
                 }}
                 onSubmit={async ({ name }, { setSubmitting, resetForm }) => {
-                  const request = { data: { attributes: { name } } };
                   try {
                     dispatch(onRequestPending());
-                    const response = await axios
-                      .patch(routes.channelPath(channelId), request);
-                    const { data: { attributes } } = response.data;
-                    dispatch(renameChannelSuccess(attributes));
-                    dispatch(onRequestSuccess());
-                    setSubmitting(false);
-                    resetForm();
-                    dispatch(closeModalWindow());
-                    dispatch(activateChannel(channelId));
+                    socket.emit('renameChannel', ({ id: channelId, name }), ({ status }) => {
+                      if (status === 'ok') {
+                        dispatch(renameChannelSuccess({ id: channelId }));
+                        dispatch(onRequestSuccess());
+                        setSubmitting(false);
+                        resetForm();
+                        dispatch(closeModalWindow());
+                        dispatch(activateChannel(channelId));
+                      }
+                    });
                   } catch (e) {
                     console.log(e);
                     dispatch(renameChannelFailure());
@@ -578,10 +573,10 @@ const ModalRenameChannel = () => {
                           type="button"
                           onClick={handleCloseModal}
                         >
-                          Cancel
+                          {i18next.t('cancel')}
                         </button>
                         <button className="btn btn-primary" type="submit" disabled={isSubmitting || !isEmpty(errors)}>
-                          Submit
+                          {i18next.t('submit')}
                         </button>
                       </div>
                     </div>
@@ -591,7 +586,7 @@ const ModalRenameChannel = () => {
             </div>
             <div className="modal-footer">
               <div className="d-block invalid-feedback">
-                {isNetworkOn ? '' : 'Network error. Please try again later'}
+                {isNetworkOn ? '' : i18next.t('networkError')}
               </div>
             </div>
           </div>
@@ -614,13 +609,23 @@ export default () => {
     e.stopPropagation();
     dispatch(toggleChannelDropDownMenu(channelId));
   };
+  const handleLogoutClick = () => {
+    dispatch(logout());
+    window.localStorage.clear();
+  };
   return (
-    <div className="row h-100 pb-3" onClick={handleDropDownMenu()}>
-      {isAddModalOpened && <ModalAddChannel />}
-      {isRemoveModalOpened && <ModalRemoveChannel />}
-      {isRenameModalOpened && <ModalRenameChannel />}
-      <Channels />
-      <Messages />
+    <div className="d-flex flex-column h-100">
+      <nav className="mb-3 navbar navbar-expand-lg navbar-light bg-light">
+        <a className="mr-auto navbar-brand" href="/">Hexlet Chat</a>
+        <button className="btn btn-primary" type="button" onClick={handleLogoutClick}>{i18next.t('signout')}</button>
+      </nav>
+      <div className="row h-100 pb-3" onClick={handleDropDownMenu()}>
+        {isAddModalOpened && <ModalAddChannel />}
+        {isRemoveModalOpened && <ModalRemoveChannel />}
+        {isRenameModalOpened && <ModalRenameChannel />}
+        <Channels />
+        <Messages />
+      </div>
     </div>
   );
 };
