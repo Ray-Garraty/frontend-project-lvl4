@@ -1,4 +1,4 @@
-[![Github Actions Status](https://github.com/hexlet-components/projects-frontend-l4-server/workflows/Node%20CI/badge.svg)](https://github.com/Ray-Garraty/projects-frontend-lvl4-remastered/actions)
+[![Github Actions Status](https://github.com/Ray-Garraty/frontend-project-lvl4/workflows/Node%20CI/badge.svg)](https://github.com/Ray-Garraty/frontend-project-lvl4/actions)
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/e65582e1efb52d14a0a5/maintainability)](https://codeclimate.com/github/Ray-Garraty/frontend-project-lvl4-remastered/maintainability)
 
