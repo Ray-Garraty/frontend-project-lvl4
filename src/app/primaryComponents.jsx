@@ -119,7 +119,7 @@ const RemovableChannel = (props) => {
   return (
     <li className="nav-item">
       <div className={divDropDownGroupClassNames} role="group">
-        <button className={firstButtonClassNames} type="button" onClick={switchToChannel(id, dispatch)}>{name}</button>
+        <button className={firstButtonClassNames} style={{ whiteSpace: 'nowrap', overflow: 'break-word', textOverflow: 'ellipsis' }} type="button" onClick={switchToChannel(id, dispatch)}>{name}</button>
         <button
           className={secondButtonClassNames}
           aria-haspopup="true"
@@ -267,6 +267,7 @@ const Messages = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       value={values.text}
+                      disabled={isSubmitting}
                     />
                     {errors.text && touched.text}
                     <button
@@ -326,13 +327,16 @@ const ModalAddChannel = () => {
             <div className="modal-body">
               <Formik
                 initialValues={{ name: '' }}
-                validate={(values) => {
+                validate={({ name }) => {
                   const errors = {};
-                  if (!values.name) {
+                  if (!name) {
                     errors.name = i18next.t('required');
                   }
-                  if (channelsNames.includes(values.name)) {
+                  if (channelsNames.includes(name)) {
                     errors.name = i18next.t('channelAlreadyExists');
+                  }
+                  if (name.length < 3 || name.length > 20) {
+                    errors.name = i18next.t('from3to20symbols');
                   }
                   return errors;
                 }}
@@ -619,7 +623,7 @@ export default () => {
         <a className="mr-auto navbar-brand" href="/">Hexlet Chat</a>
         <button className="btn btn-primary" type="button" onClick={handleLogoutClick}>{i18next.t('signout')}</button>
       </nav>
-      <div className="row h-100 pb-3" onClick={handleDropDownMenu()}>
+      <div className="row flex-grow-1 h-75 pb-3" onClick={handleDropDownMenu()}>
         {isAddModalOpened && <ModalAddChannel />}
         {isRemoveModalOpened && <ModalRemoveChannel />}
         {isRenameModalOpened && <ModalRenameChannel />}
