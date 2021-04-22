@@ -1,37 +1,4 @@
-const en = {
-  translation: {
-    username: 'Your nickname',
-    userName: 'Username',
-    password: 'Password',
-    wrongUsernameOrPassword: 'Wrong username or password',
-    signin: 'Sign In',
-    signout: 'Sign Out',
-    noAccount: "Don't have an account?",
-    signUpPage: 'Sign Up',
-    404: "404 The page doesn't exist...",
-    hexletChat: 'Hexlet Chat',
-    required: 'Your must fill this field',
-    from3to20symbols: 'Must have between 3 and 20 symbols',
-    '6symbolsOrMore': 'Must have 6 symbols or more',
-    passwordsMustMatch: 'Both passwords must match',
-    confirmPassword: 'Confirm your password',
-    userAlreadyExists: 'Such user already exists',
-    signUp: 'Sign Up',
-    remove: 'Remove',
-    rename: 'Rename',
-    submit: 'Submit',
-    networkError: 'Network error. Please try again later',
-    addChannel: 'Add channel',
-    cancel: 'Cancel',
-    channelAlreadyExists: 'Such channel already exists. Please choose another name',
-    removeChannel: 'Remove channel',
-    areYouSure: 'Are you sure?',
-    renameChannel: 'Rename channel',
-    channels: 'Channels',
-  },
-};
-
-const ru = {
+export default {
   translation: {
     username: 'Ваш ник',
     userName: 'Имя пользователя',
@@ -61,7 +28,7 @@ const ru = {
     areYouSure: 'Уверены?',
     renameChannel: 'Переименовать канал',
     channels: 'Каналы',
+    enterUsername: 'Введите имя пользователя',
+    enterPassword: 'Введите пароль',
   },
 };
-
-export { en, ru };
