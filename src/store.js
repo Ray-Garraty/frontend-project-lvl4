@@ -7,12 +7,14 @@ import modalReducer from './slices/modalSlice.js';
 import requestReducer from './slices/requestSlice.js';
 import uiStateReducer from './slices/uiStateSlice.js';
 
-export default configureStore({
-  authReducer,
-  channelReducer,
-  initReducer,
-  messageReducer,
-  modalReducer,
-  requestReducer,
-  uiStateReducer,
-});
+const reducer = {
+  authState: authReducer,
+  channelsState: channelReducer,
+  initializeState: initReducer,
+  messagesState: messageReducer,
+  modalWindowsState: modalReducer,
+  requestState: requestReducer,
+  uiState: uiStateReducer,
+};
+
+export default configureStore({ reducer });

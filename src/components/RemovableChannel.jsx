@@ -4,12 +4,9 @@ import React from 'react';
 import cn from 'classnames';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  activateChannel,
-  openRemoveModal,
-  openRenameModal,
-  toggleChannelDropDownMenu,
-} from '../app/slice.js';
+import { activateChannel } from '../slices/channelSlice.js';
+import { openRemoveModal, openRenameModal } from '../slices/modalSlice.js';
+import { toggleChannelDropDownMenu } from '../slices/uiStateSlice.js';
 
 export default (props) => {
   const { currentChannelId, channel: { id, name } } = props;

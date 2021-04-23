@@ -16,7 +16,7 @@ const initialState = JSON.parse(storage.getItem('state')) || {
 };
 
 export const messageSlice = createSlice({
-  name: 'message',
+  name: 'messagesState',
   initialState,
   reducers: {
     addMessageSuccess: (state, action) => {

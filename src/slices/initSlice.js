@@ -16,7 +16,7 @@ const initialState = JSON.parse(storage.getItem('state')) || {
 };
 
 export const initSlice = createSlice({
-  name: 'init',
+  name: 'initializeState',
   initialState,
   reducers: {
     setInitialChannels: (state, action) => {

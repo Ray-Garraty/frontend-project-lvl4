@@ -29,7 +29,7 @@ const initialState = JSON.parse(storage.getItem('state')) || {
 };
 
 export const modalSlice = createSlice({
-  name: 'modal',
+  name: 'modalWindowsState',
   initialState,
   reducers: {
     openAddModal: (state) => {

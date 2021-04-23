@@ -6,15 +6,9 @@ import { Formik } from 'formik';
 import { isEmpty } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../init.jsx';
-import {
-  onRequestPending,
-  onRequestSuccess,
-  onRequestFailure,
-  closeModalWindow,
-  activateChannel,
-  renameChannelSuccess,
-  renameChannelFailure,
-} from '../app/slice.js';
+import { closeModalWindow } from '../slices/modalSlice.js';
+import { onRequestPending, onRequestSuccess, onRequestFailure } from '../slices/requestSlice.js';
+import { activateChannel, renameChannelSuccess, renameChannelFailure } from '../slices/channelSlice.js';
 
 export default () => {
   const dispatch = useDispatch();

@@ -3,14 +3,9 @@ import { get } from 'lodash';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../init.jsx';
-import {
-  onRequestPending,
-  onRequestSuccess,
-  onRequestFailure,
-  removeChannelSuccess,
-  removeChannelFailure,
-  closeModalWindow,
-} from '../app/slice.js';
+import { onRequestPending, onRequestSuccess, onRequestFailure } from '../slices/requestSlice.js';
+import { removeChannelSuccess, removeChannelFailure } from '../slices/channelSlice.js';
+import { closeModalWindow } from '../slices/modalSlice.js';
 
 export default () => {
   const isNetworkOn = useSelector((state) => state.isNetworkOn);

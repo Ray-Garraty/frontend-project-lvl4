@@ -11,7 +11,8 @@ import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import routes from '../routes.js';
-import { setUserStatus, login, setInitialChannels } from '../app/slice.js';
+import { login, setUserStatus } from '../slices/authSlice.js';
+import { setInitialChannels } from '../slices/initSlice.js';
 
 export default () => {
   const dispatch = useDispatch();

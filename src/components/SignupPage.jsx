@@ -7,7 +7,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { isNil } from 'lodash';
 import routes from '../routes.js';
-import { login, setInitialChannels, makeSignupUserFormInvalid } from '../app/slice.js';
+import { login } from '../slices/authSlice.js';
+import { setInitialChannels } from '../slices/initSlice.js';
+import { makeSignupUserFormInvalid } from '../slices/uiStateSlice.js';
 
 export default () => {
   const dispatch = useDispatch();

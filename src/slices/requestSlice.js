@@ -6,7 +6,7 @@ const storage = window.localStorage;
 const initialState = JSON.parse(storage.getItem('state')) || { requestStatus: 'idle' };
 
 export const requestSlice = createSlice({
-  name: 'request',
+  name: 'requestState',
   initialState,
   reducers: {
     onRequestPending: (state) => {

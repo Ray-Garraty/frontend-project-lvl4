@@ -3,7 +3,8 @@
 import React from 'react';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout, toggleChannelDropDownMenu } from '../app/slice.js';
+import { logout } from '../slices/authSlice.js';
+import { toggleChannelDropDownMenu } from '../slices/uiStateSlice.js';
 import ModalAddChannel from './ModalAddChannel.jsx';
 import ModalRemoveChannel from './ModalRemoveChannel.jsx';
 import ModalRenameChannel from './ModalRenameChannel.jsx';

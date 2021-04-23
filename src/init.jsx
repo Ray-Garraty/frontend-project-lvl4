@@ -10,19 +10,15 @@ import {
   Route,
   Redirect,
 } from 'react-router-dom';
-import store from './app/store.js';
+import store from './store.js';
 import en from './translations/en.js';
 import ru from './translations/ru.js';
 import Slack from './components/Slack.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import PageNotFound from './components/PageNotFound.jsx';
 import SignupPage from './components/SignupPage.jsx';
-import {
-  addChannelSuccess,
-  addMessageSuccess,
-  removeChannelSuccess,
-  renameChannelSuccess,
-} from './app/slice.js';
+import { addChannelSuccess, removeChannelSuccess, renameChannelSuccess } from './slices/channelSlice.js';
+import { addMessageSuccess } from './slices/messageSlice.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';
