@@ -8,8 +8,9 @@ import { useHistory } from 'react-router-dom';
 import { isNil } from 'lodash';
 import routes from '../routes.js';
 import { login } from '../slices/authSlice.js';
-import { setInitialChannels } from '../slices/initSlice.js';
+import { addMessageSuccess } from '../slices/messagesSlice.js';
 import { makeSignupUserFormInvalid } from '../slices/uiStateSlice.js';
+import { addChannelSuccess, activateChannel } from '../slices/channelsSlice.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -60,12 +61,17 @@ export default () => {
               axios
                 .get('/api/v1/data', { headers: { Authorization: `Bearer ${token}` } })
                 .then((res) => {
-                  dispatch(setInitialChannels(res.data));
-                })
-                .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err))
-                .finally(() => {
                   history.push('/');
-                });
+                  const { currentChannelId, channels, messages } = res.data;
+                  channels.forEach((channel) => {
+                    dispatch(addChannelSuccess(channel));
+                  });
+                  dispatch(activateChannel(currentChannelId));
+                  messages.forEach((msg) => {
+                    dispatch(addMessageSuccess(msg));
+                  });
+                })
+                .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err));
             })
             .catch((error) => {
               if (error.response.status === 409) {

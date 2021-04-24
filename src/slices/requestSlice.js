@@ -1,25 +1,36 @@
 /* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
+import { channelsSlice } from './channelsSlice.js';
+import { messagesSlice } from './messagesSlice.js';
 
-const storage = window.localStorage;
-
-const initialState = JSON.parse(storage.getItem('state')) || { requestStatus: 'idle' };
+// const storage = window.localStorage;
 
 export const requestSlice = createSlice({
-  name: 'requestState',
-  initialState,
+  name: 'request',
+  initialState: { status: 'idle', isNetworkOn: null },
   reducers: {
     onRequestPending: (state) => {
-      state.requestStatus = 'sending';
-      storage.setItem('state', JSON.stringify(state));
+      state.status = 'sending';
     },
     onRequestSuccess: (state) => {
-      state.requestStatus = 'success';
-      storage.setItem('state', JSON.stringify(state));
+      state.status = 'success';
     },
     onRequestFailure: (state) => {
-      state.requestStatus = 'failure';
-      storage.setItem('state', JSON.stringify(state));
+      state.status = 'failure';
+    },
+    onNetworkIsDown: (state) => {
+      state.isNetworkOn = false;
+    },
+  },
+  extraReducers: {
+    [messagesSlice.actions.addMessageSuccess]: (state) => {
+      state.isNetworkOn = true;
+    },
+    [channelsSlice.actions.addChannelSuccess]: (state) => {
+      state.isNetworkOn = true;
+    },
+    [channelsSlice.actions.removeChannelSuccess]: (state) => {
+      state.isNetworkOn = true;
     },
   },
 });
@@ -28,6 +39,7 @@ export const {
   onRequestPending,
   onRequestSuccess,
   onRequestFailure,
+  onNetworkIsDown,
 } = requestSlice.actions;
 
 export default requestSlice.reducer;

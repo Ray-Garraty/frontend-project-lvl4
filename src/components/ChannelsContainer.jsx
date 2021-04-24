@@ -1,7 +1,7 @@
 import React from 'react';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { openAddModal } from '../slices/modalSlice.js';
+import { openAddModal } from '../slices/uiStateSlice.js';
 import RemovableChannel from './RemovableChannel.jsx';
 import PermanentChannel from './PermanentChannel.jsx';
 

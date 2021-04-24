@@ -1,15 +1,32 @@
 /* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
 
-const storage = window.localStorage;
+// const storage = window.localStorage;
 
-const initialState = JSON.parse(storage.getItem('state')) || {
-  uiState: {
-    signupForm: {
-      userAlreadyExists: false,
+const initialState = {
+  currentChannelId: null,
+  signupForm: {
+    userAlreadyExists: false,
+  },
+  dropDownMenu: {
+    channelId: null,
+  },
+  modalWindow: {
+    error: null,
+    addChannel: {
+      isOpened: false,
+      error: null,
+      input: {
+        isValid: true,
+      },
     },
-    dropDownMenu: {
-      channelId: null,
+    removeChannel: {
+      isOpened: false,
+      id: null,
+    },
+    renameChannel: {
+      isOpened: false,
+      id: null,
     },
   },
 };
@@ -18,22 +35,48 @@ export const uiStateSlice = createSlice({
   name: 'uiState',
   initialState,
   reducers: {
+    activateChannel: (state, action) => {
+      const id = action.payload;
+      state.currentChannelId = id;
+    },
     makeSignupUserFormInvalid: (state) => {
-      state.uiState.signupForm.userAlreadyExists = true;
+      state.signupForm.userAlreadyExists = true;
     },
     toggleChannelDropDownMenu: (state, action) => {
       const id = action.payload || null;
-      if (state.uiState.dropDownMenu.channelId === id) {
-        state.uiState.dropDownMenu.channelId = null;
+      if (state.dropDownMenu.channelId === id) {
+        state.dropDownMenu.channelId = null;
       } else {
-        state.uiState.dropDownMenu.channelId = id;
+        state.dropDownMenu.channelId = id;
       }
-      storage.setItem('state', JSON.stringify(state));
+    },
+    openAddModal: (state) => {
+      state.modalWindow.addChannel.isOpened = true;
+    },
+    openRemoveModal: (state, action) => {
+      const id = action.payload;
+      state.modalWindow.removeChannel.isOpened = true;
+      state.modalWindow.removeChannel.id = id;
+    },
+    openRenameModal: (state, action) => {
+      const id = action.payload;
+      state.modalWindow.renameChannel.isOpened = true;
+      state.modalWindow.renameChannel.id = id;
+    },
+    closeModalWindow: (state) => {
+      state.modalWindow.addChannel.isOpened = false;
+      state.modalWindow.removeChannel.isOpened = false;
+      state.modalWindow.renameChannel.isOpened = false;
     },
   },
 });
 
 export const {
+  activateChannel,
+  openAddModal,
+  openRemoveModal,
+  openRenameModal,
+  closeModalWindow,
   makeSignupUserFormInvalid,
   toggleChannelDropDownMenu,
 } = uiStateSlice.actions;

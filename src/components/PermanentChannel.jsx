@@ -1,7 +1,7 @@
 import React from 'react';
 import cn from 'classnames';
 import { useDispatch } from 'react-redux';
-import { activateChannel } from '../slices/channelSlice.js';
+import { activateChannel } from '../slices/channelsSlice.js';
 
 export default (props) => {
   const switchToChannel = (id, handler) => () => {

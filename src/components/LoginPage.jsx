@@ -12,7 +12,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import routes from '../routes.js';
 import { login, setUserStatus } from '../slices/authSlice.js';
-import { setInitialChannels } from '../slices/initSlice.js';
+import { activateChannel } from '../slices/uiStateSlice.js';
+import { addChannelSuccess } from '../slices/channelsSlice.js';
+import { addMessageSuccess } from '../slices/messagesSlice.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -42,16 +44,20 @@ export default () => {
             .then((response) => {
               const { username, token } = response.data;
               dispatch(login({ status: 'valid', username, token }));
-              window.localStorage.setItem('userAuthToken', token);
               axios
                 .get('/api/v1/data', { headers: { Authorization: `Bearer ${token}` } })
                 .then((res) => {
-                  dispatch(setInitialChannels(res.data));
-                })
-                .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err))
-                .finally(() => {
                   history.push('/');
-                });
+                  const { currentChannelId, channels, messages } = res.data;
+                  channels.forEach((channel) => {
+                    dispatch(addChannelSuccess(channel));
+                  });
+                  dispatch(activateChannel(currentChannelId));
+                  messages.forEach((msg) => {
+                    dispatch(addMessageSuccess(msg));
+                  });
+                })
+                .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err));
             })
             .catch((error) => {
               if (error.response.status === 401) {

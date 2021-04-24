@@ -3,11 +3,11 @@ import i18next from 'i18next';
 import { Formik } from 'formik';
 import { uniqueId } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessageFailure } from '../slices/messageSlice.js';
 import {
   onRequestPending,
   onRequestSuccess,
   onRequestFailure,
+  onNetworkIsDown,
 } from '../slices/requestSlice.js';
 import { socket } from '../init.jsx';
 
@@ -55,7 +55,7 @@ export default () => {
                   dispatch(onRequestSuccess());
                 });
               } catch (e) {
-                dispatch(addMessageFailure());
+                dispatch(onNetworkIsDown());
                 setSubmitting(false);
                 dispatch(onRequestFailure());
               }

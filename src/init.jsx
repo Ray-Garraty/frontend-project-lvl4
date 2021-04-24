@@ -17,8 +17,8 @@ import Slack from './components/Slack.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import PageNotFound from './components/PageNotFound.jsx';
 import SignupPage from './components/SignupPage.jsx';
-import { addChannelSuccess, removeChannelSuccess, renameChannelSuccess } from './slices/channelSlice.js';
-import { addMessageSuccess } from './slices/messageSlice.js';
+import { addChannelSuccess, removeChannelSuccess, renameChannelSuccess } from './slices/channelsSlice.js';
+import { addMessageSuccess } from './slices/messagesSlice.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';

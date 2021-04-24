@@ -6,9 +6,14 @@ import { Formik } from 'formik';
 import { isEmpty } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../init.jsx';
-import { closeModalWindow } from '../slices/modalSlice.js';
-import { addChannelSuccess, addChannelFailure, activateChannel } from '../slices/channelSlice.js';
-import { onRequestPending, onRequestSuccess, onRequestFailure } from '../slices/requestSlice.js';
+import { closeModalWindow } from '../slices/uiStateSlice.js';
+import { addChannelSuccess, activateChannel } from '../slices/channelsSlice.js';
+import {
+  onRequestPending,
+  onRequestSuccess,
+  onRequestFailure,
+  onNetworkIsDown,
+} from '../slices/requestSlice.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -72,7 +77,7 @@ export default () => {
                     });
                   } catch (e) {
                     console.log(e);
-                    dispatch(addChannelFailure());
+                    dispatch(onNetworkIsDown());
                     setSubmitting(false);
                     dispatch(onRequestFailure());
                   }

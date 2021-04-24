@@ -3,9 +3,9 @@ import { get } from 'lodash';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../init.jsx';
-import { onRequestPending, onRequestSuccess, onRequestFailure } from '../slices/requestSlice.js';
-import { removeChannelSuccess, removeChannelFailure } from '../slices/channelSlice.js';
-import { closeModalWindow } from '../slices/modalSlice.js';
+import { onRequestPending, onRequestSuccess, onRequestFailure, onNetworkIsDown } from '../slices/requestSlice.js';
+import { removeChannelSuccess } from '../slices/channelsSlice.js';
+import { closeModalWindow } from '../slices/uiStateSlice.js';
 
 export default () => {
   const isNetworkOn = useSelector((state) => state.isNetworkOn);
@@ -26,14 +26,15 @@ export default () => {
       dispatch(onRequestPending());
       socket.emit('removeChannel', { id: channelId }, ({ status }) => {
         if (status === 'ok') {
-          dispatch(removeChannelSuccess(id));
+          const channelMessagesIds = useSelector((state) => state.channels.byId[id].messagesIds);
+          dispatch(removeChannelSuccess({ id, channelMessagesIds }));
           dispatch(closeModalWindow());
           dispatch(onRequestSuccess());
         }
       });
     } catch (err) {
       console.log(err);
-      dispatch(removeChannelFailure());
+      dispatch(onNetworkIsDown());
       dispatch(onRequestFailure());
     }
   };
