@@ -17,8 +17,12 @@ import Slack from './components/Slack.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import PageNotFound from './components/PageNotFound.jsx';
 import SignupPage from './components/SignupPage.jsx';
-import { addChannelSuccess, removeChannelSuccess, renameChannelSuccess } from './slices/channelsSlice.js';
-import { addMessageSuccess } from './slices/messagesSlice.js';
+import {
+  addMessageSuccess,
+  addChannelSuccess,
+  removeChannelSuccess,
+  renameChannelSuccess,
+} from './slices/chatSlice.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';
@@ -30,13 +34,14 @@ export default () => {
     const userAuthToken = useSelector((state) => state.authState.activeUser.token);
     const isLoggedIn = !isNil(userAuthToken);
     socket.on('newChannel', (data) => {
-      dispatch(addChannelSuccess(data));
+      // console.log('Данные, поступившие при оповещении сокетом о создании нового канала: ', data);
+      dispatch(addChannelSuccess({ ...data, messagesIds: [] }));
     });
     socket.on('newMessage', (data) => {
       dispatch(addMessageSuccess(data));
     });
-    socket.on('removeChannel', (data) => {
-      dispatch(removeChannelSuccess(data));
+    socket.on('removeChannel', ({ id }) => {
+      dispatch(removeChannelSuccess(id));
     });
     socket.on('renameChannel', (data) => {
       dispatch(renameChannelSuccess(data));

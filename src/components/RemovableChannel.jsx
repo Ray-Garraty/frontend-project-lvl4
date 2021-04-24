@@ -4,8 +4,12 @@ import React from 'react';
 import cn from 'classnames';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { activateChannel } from '../slices/channelsSlice.js';
-import { openRemoveModal, openRenameModal, toggleChannelDropDownMenu } from '../slices/uiStateSlice.js';
+import {
+  activateChannel,
+  openRemoveModal,
+  openRenameModal,
+  toggleChannelDropDownMenu,
+} from '../slices/uiStateSlice.js';
 
 export default (props) => {
   const { currentChannelId, channel: { id, name } } = props;
@@ -65,14 +69,14 @@ export default (props) => {
     dispatch(openRenameModal(chnlId));
   };
 
-  const switchToChannel = (chnlId, handler) => () => {
-    handler(activateChannel(chnlId));
+  const handleActivateClick = (chnlId) => () => {
+    dispatch(activateChannel(chnlId));
   };
 
   return (
     <li className="nav-item">
       <div className={divDropDownGroupClassNames} role="group">
-        <button className={firstButtonClassNames} style={{ whiteSpace: 'nowrap', overflow: 'break-word', textOverflow: 'ellipsis' }} type="button" onClick={switchToChannel(id, dispatch)}>{name}</button>
+        <button className={firstButtonClassNames} style={{ whiteSpace: 'nowrap', overflow: 'break-word', textOverflow: 'ellipsis' }} type="button" onClick={handleActivateClick(id)}>{name}</button>
         <button
           className={secondButtonClassNames}
           aria-haspopup="true"

@@ -3,18 +3,22 @@ import { get } from 'lodash';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../init.jsx';
-import { onRequestPending, onRequestSuccess, onRequestFailure, onNetworkIsDown } from '../slices/requestSlice.js';
-import { removeChannelSuccess } from '../slices/channelsSlice.js';
 import { closeModalWindow } from '../slices/uiStateSlice.js';
+import {
+  onRequestPending,
+  onRequestSuccess,
+  onRequestFailure,
+  onNetworkIsDown,
+} from '../slices/requestSlice.js';
 
 export default () => {
-  const isNetworkOn = useSelector((state) => state.isNetworkOn);
+  const isNetworkOn = useSelector((state) => state.requestState.isNetworkOn);
   const channelId = useSelector((state) => state.uiState.modalWindow.removeChannel.id);
-  const channels = useSelector((state) => state.channels.byId);
+  const channels = useSelector((state) => state.chatState.channels.byId);
   const channelToRemove = (Object.values(channels)).find((channel) => channel.id === channelId);
   const name = get(channelToRemove, 'name', null);
   const dispatch = useDispatch();
-  const requestStatus = useSelector((state) => state.request);
+  const requestStatus = useSelector((state) => state.requestState.status);
   const pendingRequest = requestStatus === 'sending';
   const closeModal = (e) => {
     e.preventDefault();
@@ -26,8 +30,7 @@ export default () => {
       dispatch(onRequestPending());
       socket.emit('removeChannel', { id: channelId }, ({ status }) => {
         if (status === 'ok') {
-          const channelMessagesIds = useSelector((state) => state.channels.byId[id].messagesIds);
-          dispatch(removeChannelSuccess({ id, channelMessagesIds }));
+          // dispatch(removeChannelSuccess(id));
           dispatch(closeModalWindow());
           dispatch(onRequestSuccess());
         }

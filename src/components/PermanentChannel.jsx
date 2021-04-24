@@ -1,11 +1,12 @@
 import React from 'react';
 import cn from 'classnames';
 import { useDispatch } from 'react-redux';
-import { activateChannel } from '../slices/channelsSlice.js';
+import { activateChannel } from '../slices/uiStateSlice.js';
 
 export default (props) => {
-  const switchToChannel = (id, handler) => () => {
-    handler(activateChannel(id));
+  const dispatch = useDispatch();
+  const handleClick = (id) => () => {
+    dispatch(activateChannel(id));
   };
   const { currentChannelId, channel: { id, name } } = props;
   const isActive = id === currentChannelId ? 'btn-primary' : 'btn-light';
@@ -17,10 +18,9 @@ export default (props) => {
     'btn',
     { [isActive]: true },
   );
-  const dispatch = useDispatch();
   return (
     <li className="nav-item">
-      <button className={buttonClassNames} type="button" onClick={switchToChannel(id, dispatch)}>{name}</button>
+      <button className={buttonClassNames} type="button" onClick={handleClick(id)}>{name}</button>
     </li>
   );
 };

@@ -1,16 +1,14 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice.js';
-import channelsReducer from './slices/channelsSlice.js';
-import messagesReducer from './slices/messagesSlice.js';
+import chatReducer from './slices/chatSlice.js';
 import requestReducer from './slices/requestSlice.js';
 import uiStateReducer from './slices/uiStateSlice.js';
 
 const reducer = combineReducers({
   authState: authReducer,
+  chatState: chatReducer,
   uiState: uiStateReducer,
   requestState: requestReducer,
-  channelsState: channelsReducer,
-  messagesState: messagesReducer,
 });
 
 export default configureStore({ reducer });

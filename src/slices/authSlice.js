@@ -2,8 +2,6 @@
 import { mapValues } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 
-// const storage = window.localStorage;
-
 const initialState = {
   status: 'logged out',
   activeUser: {
@@ -19,7 +17,7 @@ export const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.status = 'logged out';
-      state.activeUser = mapValues(state.authState.activeUser, () => null);
+      state.activeUser = mapValues(state.activeUser, () => null);
     },
     setUserStatus: (state, action) => {
       state.activeUser.status = action.payload;

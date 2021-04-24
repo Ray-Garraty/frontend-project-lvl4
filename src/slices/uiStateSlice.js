@@ -1,8 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
 
-// const storage = window.localStorage;
-
 const initialState = {
   currentChannelId: null,
   signupForm: {

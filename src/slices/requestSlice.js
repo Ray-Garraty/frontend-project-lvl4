@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
-import { channelsSlice } from './channelsSlice.js';
-import { messagesSlice } from './messagesSlice.js';
+import { chatSlice } from './chatSlice.js';
 
 // const storage = window.localStorage;
 
@@ -23,13 +22,13 @@ export const requestSlice = createSlice({
     },
   },
   extraReducers: {
-    [messagesSlice.actions.addMessageSuccess]: (state) => {
+    [chatSlice.actions.addMessageSuccess]: (state) => {
       state.isNetworkOn = true;
     },
-    [channelsSlice.actions.addChannelSuccess]: (state) => {
+    [chatSlice.actions.addChannelSuccess]: (state) => {
       state.isNetworkOn = true;
     },
-    [channelsSlice.actions.removeChannelSuccess]: (state) => {
+    [chatSlice.actions.removeChannelSuccess]: (state) => {
       state.isNetworkOn = true;
     },
   },

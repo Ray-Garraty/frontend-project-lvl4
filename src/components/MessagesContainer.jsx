@@ -13,18 +13,17 @@ import { socket } from '../init.jsx';
 
 export default () => {
   const dispatch = useDispatch();
+  const channelId = useSelector((state) => state.uiState.currentChannelId);
   const currentChannelMessages = useSelector((state) => {
-    const { currentChannelId } = state;
-    const allMessages = Object.values(state.messages.byId);
+    const allMessages = Object.values(state.chatState.messages.byId);
     return allMessages.filter((msg) => {
       if (!msg) {
         return false;
       }
-      return msg.channelId === currentChannelId;
+      return msg.channelId === channelId;
     });
   });
-  const channelId = useSelector((state) => state.currentChannelId);
-  const isNetworkOn = useSelector((state) => state.isNetworkOn);
+  const isNetworkOn = useSelector((state) => state.requestState.isNetworkOn);
   const username = useSelector((state) => state.authState.activeUser.username);
   return (
     <div className="col h-100">

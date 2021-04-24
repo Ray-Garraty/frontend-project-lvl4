@@ -8,9 +8,8 @@ import { useHistory } from 'react-router-dom';
 import { isNil } from 'lodash';
 import routes from '../routes.js';
 import { login } from '../slices/authSlice.js';
-import { addMessageSuccess } from '../slices/messagesSlice.js';
 import { makeSignupUserFormInvalid } from '../slices/uiStateSlice.js';
-import { addChannelSuccess, activateChannel } from '../slices/channelsSlice.js';
+import { addMessageSuccess, addChannelSuccess, activateChannel } from '../slices/chatSlice.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -64,7 +63,7 @@ export default () => {
                   history.push('/');
                   const { currentChannelId, channels, messages } = res.data;
                   channels.forEach((channel) => {
-                    dispatch(addChannelSuccess(channel));
+                    dispatch(addChannelSuccess({ ...channel, messagesIds: [] }));
                   });
                   dispatch(activateChannel(currentChannelId));
                   messages.forEach((msg) => {

@@ -13,8 +13,7 @@ import { useHistory } from 'react-router-dom';
 import routes from '../routes.js';
 import { login, setUserStatus } from '../slices/authSlice.js';
 import { activateChannel } from '../slices/uiStateSlice.js';
-import { addChannelSuccess } from '../slices/channelsSlice.js';
-import { addMessageSuccess } from '../slices/messagesSlice.js';
+import { addChannelSuccess, addMessageSuccess } from '../slices/chatSlice.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -50,7 +49,7 @@ export default () => {
                   history.push('/');
                   const { currentChannelId, channels, messages } = res.data;
                   channels.forEach((channel) => {
-                    dispatch(addChannelSuccess(channel));
+                    dispatch(addChannelSuccess({ ...channel, messagesIds: [] }));
                   });
                   dispatch(activateChannel(currentChannelId));
                   messages.forEach((msg) => {

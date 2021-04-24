@@ -6,25 +6,25 @@ import { Formik } from 'formik';
 import { isEmpty } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { socket } from '../init.jsx';
-import { closeModalWindow } from '../slices/uiStateSlice.js';
+import { renameChannelSuccess } from '../slices/chatSlice.js';
+import { activateChannel, closeModalWindow } from '../slices/uiStateSlice.js';
 import {
   onRequestPending,
   onRequestSuccess,
   onRequestFailure,
   onNetworkIsDown,
 } from '../slices/requestSlice.js';
-import { activateChannel, renameChannelSuccess } from '../slices/channelsSlice.js';
 
 export default () => {
   const dispatch = useDispatch();
-  const isNetworkOn = useSelector((state) => state.isNetworkOn);
-  const channels = useSelector((state) => Object.values(state.channels.byId));
+  const isNetworkOn = useSelector((state) => state.requestState.isNetworkOn);
+  const channels = useSelector((state) => Object.values(state.chatState.channels.byId));
   const channelId = useSelector((state) => state.uiState.modalWindow.renameChannel.id);
   const [channelName] = channels
     .filter((channel) => channel.id === channelId)
     .map((channel) => channel.name);
   const channelsNames = channels.map((channel) => channel.name);
-  const requestStatus = useSelector((state) => state.request);
+  const requestStatus = useSelector((state) => state.requestState.status);
   const pendingRequest = requestStatus === 'sending';
   const handleCloseModal = (e) => {
     e.preventDefault();

@@ -6,8 +6,8 @@ import RemovableChannel from './RemovableChannel.jsx';
 import PermanentChannel from './PermanentChannel.jsx';
 
 export default () => {
-  const channels = useSelector((state) => Object.values(state.channels.byId));
-  const currentChannelId = useSelector((state) => state.currentChannelId);
+  const channels = useSelector((state) => Object.values(state.chatState.channels.byId));
+  const currentChannelId = useSelector((state) => state.uiState.currentChannelId);
   const dispatch = useDispatch();
 
   const handleAddModal = (e) => {
