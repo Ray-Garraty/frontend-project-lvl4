@@ -3,16 +3,16 @@ import i18next from 'i18next';
 import { isNil } from 'lodash';
 import ReactDOM from 'react-dom';
 import { io } from 'socket.io-client';
-import { useDispatch, useSelector, Provider } from 'react-redux';
+import { useSelector, Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   Redirect,
 } from 'react-router-dom';
-import store from './store.js';
-import en from './translations/en.js';
-import ru from './translations/ru.js';
+import reducer from './slices/index.js';
+import locales from './index.js';
 import Slack from './components/Slack.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import PageNotFound from './components/PageNotFound.jsx';
@@ -22,30 +22,31 @@ import {
   addChannelSuccess,
   removeChannelSuccess,
   renameChannelSuccess,
-} from './slices/chatSlice.js';
+} from './slices/chat.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';
-export const socket = io(domain);
+const socket = io(domain);
+export const SocketContext = React.createContext();
+const store = configureStore({ reducer });
 
 export default () => {
+  socket.on('newChannel', (data) => {
+    // console.log('Данные, поступившие при оповещении сокетом о создании нового канала: ', data);
+    store.dispatch(addChannelSuccess({ ...data, messagesIds: [] }));
+  });
+  socket.on('newMessage', (data) => {
+    store.dispatch(addMessageSuccess(data));
+  });
+  socket.on('removeChannel', ({ id }) => {
+    store.dispatch(removeChannelSuccess(id));
+  });
+  socket.on('renameChannel', (data) => {
+    store.dispatch(renameChannelSuccess(data));
+  });
   const MainComponent = () => {
-    const dispatch = useDispatch();
     const userAuthToken = useSelector((state) => state.authState.activeUser.token);
     const isLoggedIn = !isNil(userAuthToken);
-    socket.on('newChannel', (data) => {
-      // console.log('Данные, поступившие при оповещении сокетом о создании нового канала: ', data);
-      dispatch(addChannelSuccess({ ...data, messagesIds: [] }));
-    });
-    socket.on('newMessage', (data) => {
-      dispatch(addMessageSuccess(data));
-    });
-    socket.on('removeChannel', ({ id }) => {
-      dispatch(removeChannelSuccess(id));
-    });
-    socket.on('renameChannel', (data) => {
-      dispatch(renameChannelSuccess(data));
-    });
     return (
       <Router>
         <Switch>
@@ -65,17 +66,18 @@ export default () => {
       </Router>
     );
   };
-  // i18nextInstance почему-то не работает. Оставлю пока просто i18next.init(), с ним всё нормально
   i18next
     .init({
       lng: 'ru',
-      resources: { en, ru },
+      resources: locales,
     })
     .then(() => {
       const container = document.querySelector('#chat');
       ReactDOM.render(
         <Provider store={store}>
-          <MainComponent />
+          <SocketContext.Provider value={socket}>
+            <MainComponent />
+          </SocketContext.Provider>
         </Provider>,
         container,
       );

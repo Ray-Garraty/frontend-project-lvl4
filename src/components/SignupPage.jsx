@@ -1,21 +1,21 @@
 import React from 'react';
 import axios from 'axios';
+import * as yup from 'yup';
 import { Formik, Form, Field } from 'formik';
 import cn from 'classnames';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { isNil } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import routes from '../routes.js';
-import { login } from '../slices/authSlice.js';
-import { makeSignupUserFormInvalid } from '../slices/uiStateSlice.js';
-import { addMessageSuccess, addChannelSuccess, activateChannel } from '../slices/chatSlice.js';
+import { login } from '../slices/auth.js';
+import { makeSignupUserFormInvalid } from '../slices/uiState.js';
+import { addMessageSuccess, addChannelSuccess, activateChannel } from '../slices/chat.js';
 
 export default () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const doesUserAlreadyExist = useSelector((state) => state.uiState.signupForm.userAlreadyExists);
-  // console.dir(doesUserAlreadyExist);
   return (
     <div className="d-flex flex-column h-100">
       <nav className="mb-3 navbar navbar-expand-lg navbar-light bg-light">
@@ -29,19 +29,13 @@ export default () => {
         }}
         validate={({ username, password, passwordConfirmation }) => {
           const errors = {};
-          if (!username) {
-            errors.username = i18next.t('required');
-          } else if (username.length < 3 || username.length > 20) {
+          const usernameValidationSchema = yup.string().min(3).max(20);
+          if (!usernameValidationSchema.isValidSync(username)) {
             errors.username = i18next.t('from3to20symbols');
           }
-          if (!password) {
-            errors.password = i18next.t('required');
-          }
-          if (password.length < 6) {
+          const passwordValidationSchema = yup.string().min(6);
+          if (!passwordValidationSchema.isValidSync(password)) {
             errors.password = i18next.t('6symbolsOrMore');
-          }
-          if (!passwordConfirmation) {
-            errors.passwordConfirmation = i18next.t('required');
           }
           if (password !== passwordConfirmation) {
             errors.passwordConfirmation = i18next.t('passwordsMustMatch');
@@ -116,7 +110,7 @@ export default () => {
                         {doesUserAlreadyExist ? i18next.t('userAlreadyExists') : null}
                       </div>
                     </div>
-                    <button className="w-100 mb-3 btn btn-outline-primary" type="submit" disabled={isSubmitting}>
+                    <button className="w-100 mb-3 btn btn-outline-primary" type="submit" disabled={isSubmitting || !isEmpty(errors)}>
                       {i18next.t('signUp')}
                     </button>
                   </Form>

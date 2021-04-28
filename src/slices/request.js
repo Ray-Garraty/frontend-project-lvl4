@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
-import { chatSlice } from './chatSlice.js';
+import { chatSlice } from './chat.js';
 
 // const storage = window.localStorage;
 

@@ -9,7 +9,7 @@ import {
   openRemoveModal,
   openRenameModal,
   toggleChannelDropDownMenu,
-} from '../slices/uiStateSlice.js';
+} from '../slices/uiState.js';
 
 export default (props) => {
   const { currentChannelId, channel: { id, name } } = props;

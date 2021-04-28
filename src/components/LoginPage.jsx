@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import * as yup from 'yup';
 import {
   Formik,
   Form,
@@ -11,9 +12,9 @@ import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import routes from '../routes.js';
-import { login, setUserStatus } from '../slices/authSlice.js';
-import { activateChannel } from '../slices/uiStateSlice.js';
-import { addChannelSuccess, addMessageSuccess } from '../slices/chatSlice.js';
+import { login, setUserStatus } from '../slices/auth.js';
+import { activateChannel } from '../slices/uiState.js';
+import { addChannelSuccess, addMessageSuccess } from '../slices/chat.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -28,14 +29,11 @@ export default () => {
       <Formik
         initialValues={{ username: '', password: '' }}
         validate={({ username, password }) => {
-          const errors = {};
-          if (!username) {
-            errors.username = i18next.t('enterUsername');
+          const validationSchema = yup.string().required();
+          if (!(validationSchema.isValidSync(username) && validationSchema.isValidSync(password))) {
+            return { error: i18next.t('wrongUsernameOrPassword') };
           }
-          if (!password) {
-            errors.password = i18next.t('enterPassword');
-          }
-          return errors;
+          return null;
         }}
         onSubmit={(values, { setSubmitting }) => {
           axios
@@ -79,13 +77,12 @@ export default () => {
                   <div className="form-group">
                     <label className="form-label" htmlFor="username">{i18next.t('username')}</label>
                     <Field className={inputClassNames} type="username" name="username" id="username" required />
-                    <ErrorMessage name="username" component="div" />
                   </div>
                   <div className="form-group">
                     <label className="form-label" htmlFor="password">{i18next.t('password')}</label>
                     <Field className={inputClassNames} type="password" name="password" id="password" required />
                     <div className="invalid-feedback">{i18next.t('wrongUsernameOrPassword')}</div>
-                    <ErrorMessage name="password" component="div" />
+                    <ErrorMessage name="error" component="div" />
                   </div>
                   <button className="w-100 mb-3 btn btn-outline-primary" type="submit" disabled={isSubmitting}>
                     {i18next.t('signin')}

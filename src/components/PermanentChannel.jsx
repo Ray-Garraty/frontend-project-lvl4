@@ -1,7 +1,7 @@
 import React from 'react';
 import cn from 'classnames';
 import { useDispatch } from 'react-redux';
-import { activateChannel } from '../slices/uiStateSlice.js';
+import { activateChannel } from '../slices/uiState.js';
 
 export default (props) => {
   const dispatch = useDispatch();
