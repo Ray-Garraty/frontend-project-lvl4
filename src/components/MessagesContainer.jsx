@@ -2,17 +2,10 @@ import React from 'react';
 import i18next from 'i18next';
 import { Formik } from 'formik';
 import { uniqueId } from 'lodash';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { SocketContext } from '../init.jsx';
-import {
-  onRequestPending,
-  onRequestSuccess,
-  onRequestFailure,
-  onNetworkIsDown,
-} from '../slices/request.js';
 
 export default () => {
-  const dispatch = useDispatch();
   const channelId = useSelector((state) => state.uiState.currentChannelId);
   const currentChannelMessages = useSelector((state) => {
     const allMessages = Object.values(state.chatState.messages.byId);
@@ -23,7 +16,6 @@ export default () => {
       return msg.channelId === channelId;
     });
   });
-  const isNetworkOn = useSelector((state) => state.requestState.isNetworkOn);
   const { username } = JSON.parse(window.localStorage.getItem('user'));
   return (
     <SocketContext.Consumer>
@@ -42,23 +34,21 @@ export default () => {
             <div className="mt-auto">
               <Formik
                 initialValues={{ text: '' }}
-                onSubmit={async (values, { setSubmitting, resetForm }) => {
+                onSubmit={async (values, { setSubmitting, setErrors, resetForm }) => {
                   const message = {
                     username,
                     text: values.text,
                     channelId,
                   };
                   try {
-                    dispatch(onRequestPending());
                     await socket.emit('newMessage', { message }, () => {
                       setSubmitting(false);
                       resetForm();
-                      dispatch(onRequestSuccess());
                     });
                   } catch (e) {
-                    dispatch(onNetworkIsDown());
+                    console.log(e);
+                    setErrors({ networkError: i18next.t('networkError') });
                     setSubmitting(false);
-                    dispatch(onRequestFailure());
                   }
                 }}
               >
@@ -94,7 +84,7 @@ export default () => {
                         </button>
                       </div>
                       <div className="d-block invalid-feedback">
-                        {isNetworkOn ? '' : i18next.t('networkError')}
+                        {errors.networkError}
                       </div>
                     </div>
                   </form>

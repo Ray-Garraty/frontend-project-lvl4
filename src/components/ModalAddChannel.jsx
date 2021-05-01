@@ -7,20 +7,11 @@ import { isEmpty } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { SocketContext } from '../init.jsx';
 import { activateChannel, closeModalWindow } from '../slices/uiState.js';
-import {
-  onRequestPending,
-  onRequestSuccess,
-  onRequestFailure,
-  onNetworkIsDown,
-} from '../slices/request.js';
 
 export default () => {
   const dispatch = useDispatch();
-  const isNetworkOn = useSelector((state) => state.requestState.isNetworkOn);
   const channels = useSelector((state) => Object.values(state.chatState.channels.byId));
   const channelsNames = channels.map((channel) => channel.name);
-  const requestStatus = useSelector((state) => state.requestState.status);
-  const pendingRequest = requestStatus === 'sending';
   const handleCloseModal = (e) => {
     e.preventDefault();
     dispatch(closeModalWindow());
@@ -43,7 +34,7 @@ export default () => {
                   <div className="modal-title h4">
                     {i18next.t('addChannel')}
                   </div>
-                  <button className="close" type="button" onClick={handleCloseModal} disabled={pendingRequest}>
+                  <button className="close" type="button" onClick={handleCloseModal} >
                     <span aria-hidden="true">x</span>
                     <span className="sr-only">{i18next.t('cancel')}</span>
                   </button>
@@ -64,11 +55,9 @@ export default () => {
                       }
                       return errors;
                     }}
-                    onSubmit={async ({ name }, { setSubmitting, resetForm }) => {
+                    onSubmit={async ({ name }, { setSubmitting, resetForm, setErrors }) => {
                       try {
-                        dispatch(onRequestPending());
                         await socket.emit('newChannel', { name }, ({ data: { id } }) => {
-                          dispatch(onRequestSuccess());
                           setSubmitting(false);
                           resetForm();
                           dispatch(closeModalWindow());
@@ -76,9 +65,8 @@ export default () => {
                         });
                       } catch (e) {
                         console.log(e);
-                        dispatch(onNetworkIsDown());
+                        setErrors({ networkError: i18next.t('networkError') });
                         setSubmitting(false);
-                        dispatch(onRequestFailure());
                       }
                     }}
                   >
@@ -114,16 +102,15 @@ export default () => {
                               {i18next.t('submit')}
                             </button>
                           </div>
+                          <div className="d-block invalid-feedback">
+                            {errors.networkError}
+                          </div>
                         </div>
                       </form>
                     )}
                   </Formik>
                 </div>
-                <div className="modal-footer">
-                  <div className="d-block invalid-feedback">
-                    {isNetworkOn ? '' : i18next.t('networkError')}
-                  </div>
-                </div>
+                <div className="modal-footer" />
               </div>
             </div>
           </div>
