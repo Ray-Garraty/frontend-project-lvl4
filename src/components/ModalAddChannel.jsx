@@ -34,7 +34,7 @@ export default () => {
                   <div className="modal-title h4">
                     {i18next.t('addChannel')}
                   </div>
-                  <button className="close" type="button" onClick={handleCloseModal} >
+                  <button className="close" type="button" onClick={handleCloseModal}>
                     <span aria-hidden="true">x</span>
                     <span className="sr-only">{i18next.t('cancel')}</span>
                   </button>
@@ -110,7 +110,6 @@ export default () => {
                     )}
                   </Formik>
                 </div>
-                <div className="modal-footer" />
               </div>
             </div>
           </div>

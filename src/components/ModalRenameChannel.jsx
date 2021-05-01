@@ -6,13 +6,13 @@ import { Formik } from 'formik';
 import { isEmpty } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { SocketContext } from '../init.jsx';
-import { renameChannelSuccess } from '../slices/chat.js';
+import { renameChannelSuccess } from '../slices/channels.js';
 import { activateChannel, closeModalWindow } from '../slices/uiState.js';
 
 export default () => {
   const dispatch = useDispatch();
   const channels = useSelector((state) => Object.values(state.chatState.channels.byId));
-  const channelId = useSelector((state) => state.uiState.modalWindow.renameChannel.id);
+  const channelId = useSelector((state) => state.uiState.modalWindow.channelId);
   const [channelName] = channels
     .filter((channel) => channel.id === channelId)
     .map((channel) => channel.name);

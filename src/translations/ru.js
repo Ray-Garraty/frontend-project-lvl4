@@ -1,5 +1,6 @@
 export default {
   translation: {
+    mainTitle: 'Чат Хекслета',
     username: 'Ваш ник',
     userName: 'Имя пользователя',
     password: 'Пароль',
@@ -9,7 +10,7 @@ export default {
     noAccount: 'Нет аккаунта?',
     signUpPage: 'Регистрация',
     404: '404 Страница не существует...',
-    hexletChat: 'Hexlet Chat',
+    hexletChat: 'Чат Хекслета',
     required: 'Обязательное поле',
     from3to20symbols: 'От 3 до 20 символов',
     '6symbolsOrMore': 'Не менее 6 символов',

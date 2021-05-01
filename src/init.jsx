@@ -19,12 +19,12 @@ import LoginPage from './components/LoginPage.jsx';
 import PageNotFound from './components/PageNotFound.jsx';
 import SignupPage from './components/SignupPage.jsx';
 import { activateChannel } from './slices/uiState.js';
+import { addMessageSuccess } from './slices/messages.js';
 import {
-  addMessageSuccess,
   addChannelSuccess,
   removeChannelSuccess,
   renameChannelSuccess,
-} from './slices/chat.js';
+} from './slices/channels.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';

@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import { get } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
@@ -13,22 +14,9 @@ const initialState = {
     channelId: null,
   },
   modalWindow: {
-    error: null,
-    addChannel: {
-      isOpened: false,
-      error: null,
-      input: {
-        isValid: true,
-      },
-    },
-    removeChannel: {
-      isOpened: false,
-      id: null,
-    },
-    renameChannel: {
-      isOpened: false,
-      id: null,
-    },
+    type: null,
+    isOpened: false,
+    channelId: null,
   },
 };
 
@@ -54,33 +42,22 @@ export const uiStateSlice = createSlice({
         state.dropDownMenu.channelId = id;
       }
     },
-    openAddModal: (state) => {
-      state.modalWindow.addChannel.isOpened = true;
+    openModalWindow: (state, action) => {
+      const { type } = action.payload;
+      const channelId = get(action.payload, 'channelId', null);
+      return { ...state, modalWindow: { type, isOpened: true, channelId } };
     },
-    openRemoveModal: (state, action) => {
-      const id = action.payload;
-      state.modalWindow.removeChannel.isOpened = true;
-      state.modalWindow.removeChannel.id = id;
-    },
-    openRenameModal: (state, action) => {
-      const id = action.payload;
-      state.modalWindow.renameChannel.isOpened = true;
-      state.modalWindow.renameChannel.id = id;
-    },
-    closeModalWindow: (state) => {
-      state.modalWindow.addChannel.isOpened = false;
-      state.modalWindow.removeChannel.isOpened = false;
-      state.modalWindow.renameChannel.isOpened = false;
-    },
+    closeModalWindow: (state) => ({
+      ...state,
+      modalWindow: { type: null, isOpened: false, channelId: null },
+    }),
   },
 });
 
 export const {
   activateChannel,
   toggleSigninFormStatus,
-  openAddModal,
-  openRemoveModal,
-  openRenameModal,
+  openModalWindow,
   closeModalWindow,
   makeSignupUserFormInvalid,
   toggleChannelDropDownMenu,

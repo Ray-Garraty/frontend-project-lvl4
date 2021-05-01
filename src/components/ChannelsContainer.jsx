@@ -1,9 +1,8 @@
 import React from 'react';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { openAddModal } from '../slices/uiState.js';
-import RemovableChannel from './RemovableChannel.jsx';
-import PermanentChannel from './PermanentChannel.jsx';
+import { openModalWindow } from '../slices/uiState.js';
+import Channel from './Channel.jsx';
 
 export default () => {
   const channels = useSelector((state) => Object.values(state.chatState.channels.byId));
@@ -12,7 +11,7 @@ export default () => {
 
   const handleAddModal = (e) => {
     e.preventDefault();
-    dispatch(openAddModal());
+    dispatch(openModalWindow({ type: 'addChannel' }));
   };
   return (
     <div className="col-3 border-right">
@@ -21,21 +20,12 @@ export default () => {
         <button className="ml-auto p-0 btn btn-link" type="button" onClick={handleAddModal}>+</button>
       </div>
       <ul className="nav flex-column nav-pills nav-fill">
-        {channels.map((channel) => (channel.removable
-          ? (
-            <RemovableChannel
-              currentChannelId={currentChannelId}
-              channel={channel}
-              key={channel.id}
-            />
-          )
-          : (
-            <PermanentChannel
-              currentChannelId={currentChannelId}
-              channel={channel}
-              key={channel.id}
-            />
-          )
+        {channels.map((channel) => (
+          <Channel
+            currentChannelId={currentChannelId}
+            channel={channel}
+            key={channel.id}
+          />
         ))}
       </ul>
     </div>

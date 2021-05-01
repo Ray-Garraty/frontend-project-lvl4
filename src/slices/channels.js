@@ -1,17 +1,14 @@
 /* eslint-disable no-param-reassign */
 import { uniq } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
+import { messagesSlice } from './messages.js';
 
-export const chatSlice = createSlice({
-  name: 'chat',
-  initialState: {
-    channels: { byId: {}, allIds: [] },
-    messages: { byId: {}, allIds: [] },
-  },
+export const channelsSlice = createSlice({
+  name: 'channels',
+  initialState: { byId: {}, allIds: [] },
   reducers: {
     addChannelSuccess: (state, action) => {
       const channel = action.payload;
-      // console.log('Новый канал в редукторе addChannelSuccess: ', channel);
       const { id } = channel;
       state.channels.byId[id] = channel;
       state.channels.allIds = uniq([...state.channels.allIds, id.toString()]);
@@ -38,20 +35,13 @@ export const chatSlice = createSlice({
       const { id, name } = action.payload;
       state.channels.byId[id].name = name;
     },
-    addMessageSuccess: (state, action) => {
-      try {
-        const { id, message } = action.payload;
-        const { channelId } = message;
-        // console.log('Данные, пришедшие в редуктор addMessageSuccess: ', action.payload);
-        state.messages.byId[id] = { ...message, id };
-        // console.log(current(state.messages.allIds));
-        state.messages.allIds = uniq([...state.messages.allIds, id]);
-        const channelMessagesIds = state.channels.byId[channelId].messagesIds;
-        // console.log(channelId, channelMessagesIds);
-        state.channels.byId[channelId].messagesIds = [...channelMessagesIds, id];
-      } catch (e) {
-        console.log(e);
-      }
+  },
+  extraReducers: {
+    [messagesSlice.actions.addMessageSuccess]: (state, action) => {
+      const { id, message } = action.payload;
+      const { channelId } = message;
+      const channelMessagesIds = state.byId[channelId].messagesIds;
+      state.byId[channelId].messagesIds = [...channelMessagesIds, id];
     },
   },
 });
@@ -60,7 +50,6 @@ export const {
   addChannelSuccess,
   removeChannelSuccess,
   renameChannelSuccess,
-  addMessageSuccess,
-} = chatSlice.actions;
+} = channelsSlice.actions;
 
-export default chatSlice.reducer;
+export default channelsSlice.reducer;
