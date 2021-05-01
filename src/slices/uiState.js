@@ -3,6 +3,9 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   currentChannelId: null,
+  signinForm: {
+    isInvalid: false,
+  },
   signupForm: {
     userAlreadyExists: false,
   },
@@ -36,6 +39,9 @@ export const uiStateSlice = createSlice({
     activateChannel: (state, action) => {
       const id = action.payload;
       state.currentChannelId = id;
+    },
+    toggleSigninFormStatus: (state) => {
+      state.signinForm.isInvalid = !state.signinForm.isInvalid;
     },
     makeSignupUserFormInvalid: (state) => {
       state.signupForm.userAlreadyExists = true;
@@ -71,6 +77,7 @@ export const uiStateSlice = createSlice({
 
 export const {
   activateChannel,
+  toggleSigninFormStatus,
   openAddModal,
   openRemoveModal,
   openRenameModal,

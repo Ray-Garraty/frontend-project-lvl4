@@ -24,7 +24,7 @@ export default () => {
     });
   });
   const isNetworkOn = useSelector((state) => state.requestState.isNetworkOn);
-  const username = useSelector((state) => state.authState.activeUser.username);
+  const { username } = JSON.parse(window.localStorage.getItem('user'));
   return (
     <SocketContext.Consumer>
       {(socket) => (

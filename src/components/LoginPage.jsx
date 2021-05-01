@@ -12,15 +12,13 @@ import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import routes from '../routes.js';
-import { login, setUserStatus } from '../slices/auth.js';
-import { activateChannel } from '../slices/uiState.js';
-import { addChannelSuccess, addMessageSuccess } from '../slices/chat.js';
+import { toggleSigninFormStatus } from '../slices/uiState.js';
 
 export default () => {
-  const dispatch = useDispatch();
   const history = useHistory();
-  const isUserInvalid = useSelector((state) => state.authState.activeUser.status === 'invalid');
-  const inputClassNames = cn('form-control', { 'is-invalid': isUserInvalid });
+  const dispatch = useDispatch();
+  const isFormInvalid = useSelector((state) => state.uiState.signinForm.isInvalid);
+  const inputClassNames = cn('form-control', { 'is-invalid': isFormInvalid });
   return (
     <div className="d-flex flex-column h-100">
       <nav className="mb-3 navbar navbar-expand-lg navbar-light bg-light">
@@ -39,27 +37,13 @@ export default () => {
           axios
             .post(routes.loginPath(), values)
             .then((response) => {
-              const { username, token } = response.data;
-              dispatch(login({ status: 'valid', username, token }));
-              axios
-                .get('/api/v1/data', { headers: { Authorization: `Bearer ${token}` } })
-                .then((res) => {
-                  history.push('/');
-                  const { currentChannelId, channels, messages } = res.data;
-                  channels.forEach((channel) => {
-                    dispatch(addChannelSuccess({ ...channel, messagesIds: [] }));
-                  });
-                  dispatch(activateChannel(currentChannelId));
-                  messages.forEach((msg) => {
-                    dispatch(addMessageSuccess(msg));
-                  });
-                })
-                .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err));
+              window.localStorage.setItem('user', JSON.stringify(response.data));
+              history.push('/');
             })
             .catch((error) => {
               if (error.response.status === 401) {
-                // console.log('Такого пользователя не существует');
-                dispatch(setUserStatus('invalid'));
+                console.log('Такого пользователя не существует');
+                dispatch(toggleSigninFormStatus());
               } else {
                 console.log(error);
               }

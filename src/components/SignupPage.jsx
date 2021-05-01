@@ -8,9 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { isEmpty, isNil } from 'lodash';
 import routes from '../routes.js';
-import { login } from '../slices/auth.js';
 import { makeSignupUserFormInvalid } from '../slices/uiState.js';
-import { addMessageSuccess, addChannelSuccess, activateChannel } from '../slices/chat.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -47,24 +45,8 @@ export default () => {
           axios
             .post(routes.sighUpPath(), { username, password })
             .then((response) => {
-              const { username, token } = response.data;
-              // console.log('Пришло с сервера: ', response.data);
-              dispatch(login({ status: 'valid', username, token }));
-              window.localStorage.setItem('userAuthToken', token);
-              axios
-                .get('/api/v1/data', { headers: { Authorization: `Bearer ${token}` } })
-                .then((res) => {
-                  history.push('/');
-                  const { currentChannelId, channels, messages } = res.data;
-                  channels.forEach((channel) => {
-                    dispatch(addChannelSuccess({ ...channel, messagesIds: [] }));
-                  });
-                  dispatch(activateChannel(currentChannelId));
-                  messages.forEach((msg) => {
-                    dispatch(addMessageSuccess(msg));
-                  });
-                })
-                .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err));
+              window.localStorage.setItem('user', JSON.stringify(response.data));
+              history.push('/');
             })
             .catch((error) => {
               if (error.response.status === 409) {

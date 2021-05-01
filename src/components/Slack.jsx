@@ -2,8 +2,8 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import i18next from 'i18next';
+import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../slices/auth.js';
 import { toggleChannelDropDownMenu } from '../slices/uiState.js';
 import ModalAddChannel from './ModalAddChannel.jsx';
 import ModalRemoveChannel from './ModalRemoveChannel.jsx';
@@ -12,6 +12,7 @@ import ChannelsContainer from './ChannelsContainer.jsx';
 import MessagesContainer from './MessagesContainer.jsx';
 
 export default () => {
+  const history = useHistory();
   const isAddModalOpened = useSelector((state) => state.uiState.modalWindow.addChannel.isOpened);
   const isRemoveModalOpened = useSelector(
     (state) => state.uiState.modalWindow.removeChannel.isOpened,
@@ -25,9 +26,10 @@ export default () => {
     dispatch(toggleChannelDropDownMenu(channelId));
   };
   const handleLogoutClick = () => {
-    dispatch(logout());
     window.localStorage.clear();
+    history.push('/login');
   };
+
   return (
     <div className="d-flex flex-column h-100">
       <nav className="mb-3 navbar navbar-expand-lg navbar-light bg-light">

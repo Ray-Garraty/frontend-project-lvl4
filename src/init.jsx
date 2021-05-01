@@ -1,9 +1,10 @@
 import React from 'react';
+import axios from 'axios';
+import { get } from 'lodash';
 import i18next from 'i18next';
-import { isNil } from 'lodash';
 import ReactDOM from 'react-dom';
 import { io } from 'socket.io-client';
-import { useSelector, Provider } from 'react-redux';
+import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import {
   BrowserRouter as Router,
@@ -17,6 +18,7 @@ import Slack from './components/Slack.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import PageNotFound from './components/PageNotFound.jsx';
 import SignupPage from './components/SignupPage.jsx';
+import { activateChannel } from './slices/uiState.js';
 import {
   addMessageSuccess,
   addChannelSuccess,
@@ -28,11 +30,26 @@ const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';
 const socket = io(domain);
 export const SocketContext = React.createContext();
+const AuthContext = React.createContext();
+const user = JSON.parse(window.localStorage.getItem('user'));
 const store = configureStore({ reducer });
 
-export default () => {
+const initializeChannels = async (token) => axios
+  .get('/api/v1/data', { headers: { Authorization: `Bearer ${token}` } })
+  .then((res) => {
+    const { currentChannelId, channels, messages } = res.data;
+    channels.forEach((channel) => {
+      store.dispatch(addChannelSuccess({ ...channel, messagesIds: [] }));
+    });
+    store.dispatch(activateChannel(currentChannelId));
+    messages.forEach((msg) => {
+      store.dispatch(addMessageSuccess(msg));
+    });
+  })
+  .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err));
+
+export default async () => {
   socket.on('newChannel', (data) => {
-    // console.log('Данные, поступившие при оповещении сокетом о создании нового канала: ', data);
     store.dispatch(addChannelSuccess({ ...data, messagesIds: [] }));
   });
   socket.on('newMessage', (data) => {
@@ -44,42 +61,49 @@ export default () => {
   socket.on('renameChannel', (data) => {
     store.dispatch(renameChannelSuccess(data));
   });
-  const MainComponent = () => {
-    const userAuthToken = useSelector((state) => state.authState.activeUser.token);
-    const isLoggedIn = !isNil(userAuthToken);
-    return (
-      <Router>
-        <Switch>
-          <Route exact path="/">
-            {isLoggedIn ? <Slack /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/login">
-            <LoginPage />
-          </Route>
-          <Route path="/signup">
-            <SignupPage />
-          </Route>
-          <Route>
-            <PageNotFound />
-          </Route>
-        </Switch>
-      </Router>
-    );
-  };
-  i18next
-    .init({
-      lng: 'ru',
-      resources: locales,
-    })
-    .then(() => {
-      const container = document.querySelector('#chat');
-      ReactDOM.render(
-        <Provider store={store}>
-          <SocketContext.Provider value={socket}>
-            <MainComponent />
-          </SocketContext.Provider>
-        </Provider>,
-        container,
-      );
-    });
+
+  if (user) {
+    await initializeChannels(user.token);
+  }
+
+  const MainComponent = () => (
+    <AuthContext.Consumer value={user}>
+      {(value) => {
+        const token = get(value, 'token', null);
+        console.log('токен: ', token);
+        return (
+          <Router>
+            <Switch>
+              <Route exact path="/">
+                {token ? <Slack /> : <Redirect to="/login" />}
+              </Route>
+              <Route path="/login">
+                <LoginPage />
+              </Route>
+              <Route path="/signup">
+                <SignupPage />
+              </Route>
+              <Route>
+                <PageNotFound />
+              </Route>
+            </Switch>
+          </Router>
+        );
+      }}
+    </AuthContext.Consumer>
+  );
+
+  await i18next.init({ lng: 'ru', resources: locales });
+
+  const container = document.querySelector('#chat');
+  ReactDOM.render(
+    <Provider store={store}>
+      <SocketContext.Provider value={socket}>
+        <AuthContext.Provider value={user}>
+          <MainComponent />
+        </AuthContext.Provider>
+      </SocketContext.Provider>
+    </Provider>,
+    container,
+  );
 };

@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { isNil, uniq } from 'lodash';
-import { createSlice, current } from '@reduxjs/toolkit';
+import { uniq } from 'lodash';
+import { createSlice } from '@reduxjs/toolkit';
 
 export const chatSlice = createSlice({
   name: 'chat',
@@ -60,7 +60,6 @@ export const {
   addChannelSuccess,
   removeChannelSuccess,
   renameChannelSuccess,
-  activateChannel,
   addMessageSuccess,
 } = chatSlice.actions;
 
