@@ -38,18 +38,18 @@ export default () => {
             .post(routes.loginPath(), values)
             .then((response) => {
               window.localStorage.setItem('user', JSON.stringify(response.data));
+              setSubmitting(false);
               history.push('/');
+              console.log('Пускаю на сервер...');
             })
             .catch((error) => {
+              setSubmitting(false);
               if (error.response.status === 401) {
                 console.log('Такого пользователя не существует');
                 dispatch(toggleSigninFormStatus());
               } else {
                 console.log(error);
               }
-            })
-            .finally(() => {
-              setSubmitting(false);
             });
         }}
       >

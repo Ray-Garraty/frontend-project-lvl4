@@ -46,18 +46,17 @@ export default () => {
             .post(routes.sighUpPath(), { username, password })
             .then((response) => {
               window.localStorage.setItem('user', JSON.stringify(response.data));
+              setSubmitting(false);
               history.push('/');
             })
             .catch((error) => {
               if (error.response.status === 409) {
                 // console.log('Такой пользователь уже существует');
                 dispatch(makeSignupUserFormInvalid());
+                setSubmitting(false);
               } else {
                 console.log(error);
               }
-            })
-            .finally(() => {
-              setSubmitting(false);
             });
         }}
       >
