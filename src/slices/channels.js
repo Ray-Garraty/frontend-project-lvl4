@@ -1,6 +1,6 @@
 import { uniq } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
-import { messagesActions } from './messages.js';
+import { actions as messagesActions } from './messages.js';
 
 export const channelsSlice = createSlice({
   name: 'channels',
@@ -51,6 +51,6 @@ export const channelsSlice = createSlice({
   },
 });
 
-export const { channelsActions } = channelsSlice;
+export const { actions } = channelsSlice;
 
 export default channelsSlice.reducer;
