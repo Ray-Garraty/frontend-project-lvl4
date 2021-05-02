@@ -19,7 +19,7 @@ const initialState = {
   },
 };
 
-export const uiStateSlice = createSlice({
+const uiStateSlice = createSlice({
   name: 'uiState',
   initialState,
   reducers: {
@@ -48,5 +48,7 @@ export const uiStateSlice = createSlice({
     }),
   },
 });
+
+export const { actions } = uiStateSlice;
 
 export default uiStateSlice;

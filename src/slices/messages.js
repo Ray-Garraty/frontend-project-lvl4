@@ -2,7 +2,7 @@ import { uniq } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 import { actions as channelsActions } from './channels.js';
 
-export const messagesSlice = createSlice({
+const messagesSlice = createSlice({
   name: 'messages',
   initialState: { byId: {}, allIds: [] },
   reducers: {
