@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-/* eslint-disable jsx-a11y/control-has-associated-label */
 import React from 'react';
 import cn from 'classnames';
 import i18next from 'i18next';
@@ -87,6 +85,7 @@ export default (props) => {
           <button className={firstButtonClassNames} style={{ whiteSpace: 'nowrap', overflow: 'break-word', textOverflow: 'ellipsis' }} type="button" onClick={handleActivateClick(id)}>{name}</button>
           <button
             className={secondButtonClassNames}
+            aria-label="Open dropdown menu"
             aria-haspopup="true"
             aria-expanded={isDropDownOpened}
             type="button"
@@ -101,8 +100,8 @@ export default (props) => {
             data-popper-escape={isDropDownOpened ? 'false' : false}
             data-popper-placement={isDropDownOpened ? 'bottom-start' : false}
           >
-            <a className="dropdown-item" href="#" role="button" onClick={handleRemoveModal(id)}>{i18next.t('remove')}</a>
-            <a className="dropdown-item" href="#" role="button" onClick={handleRenameModal(id)}>{i18next.t('rename')}</a>
+            <button className="dropdown-item" href="#" type="button" onClick={handleRemoveModal(id)}>{i18next.t('remove')}</button>
+            <button className="dropdown-item" href="#" type="button" onClick={handleRenameModal(id)}>{i18next.t('rename')}</button>
           </div>
         </div>
       </li>

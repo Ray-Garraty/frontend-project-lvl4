@@ -7,7 +7,7 @@ import { closeModalWindow } from '../slices/uiState.js';
 
 export default () => {
   const channelId = useSelector((state) => state.uiState.modalWindow.channelId);
-  const channels = useSelector((state) => state.chatState.channels.byId);
+  const channels = useSelector((state) => state.channelsState.byId);
   const channelToRemove = (Object.values(channels)).find((channel) => channel.id === channelId);
   const name = get(channelToRemove, 'name', null);
   const dispatch = useDispatch();

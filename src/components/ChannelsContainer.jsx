@@ -5,7 +5,7 @@ import { openModalWindow } from '../slices/uiState.js';
 import Channel from './Channel.jsx';
 
 export default () => {
-  const channels = useSelector((state) => Object.values(state.chatState.channels.byId));
+  const channels = useSelector((state) => Object.values(state.channelsState.byId));
   const currentChannelId = useSelector((state) => state.uiState.currentChannelId);
   const dispatch = useDispatch();
 

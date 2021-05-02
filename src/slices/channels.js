@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { uniq } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 import { messagesSlice } from './messages.js';
@@ -10,30 +9,29 @@ export const channelsSlice = createSlice({
     addChannelSuccess: (state, action) => {
       const channel = action.payload;
       const { id } = channel;
-      state.channels.byId[id] = channel;
-      state.channels.allIds = uniq([...state.channels.allIds, id.toString()]);
+      return {
+        byId: { ...state.byId, [id]: channel },
+        allIds: uniq([...state.allIds, id.toString()]),
+      };
     },
     removeChannelSuccess: (state, action) => {
       const id = action.payload;
-      const channelsIds = state.channels.allIds;
+      const { allIds } = state;
       /* почему-то сокет присылает оповещение 2 раза, что приводит к ошибкам, поэтому пришлось
       прикрутить проверку наличия id удаляемого канала в списке всех id каналов */
-      if (channelsIds.includes(id.toString())) {
-        const channelMessagesIds = state.channels.byId[id].messagesIds;
-        const { [id]: channel, ...otherChannels } = state.channels.byId;
-        state.channels.byId = otherChannels;
-        state.channels.allIds = state.channels.allIds
-          .filter((channelId) => channelId !== id.toString());
-        channelMessagesIds.forEach((messageId) => {
-          const { [messageId]: message, ...otherMessages } = state.messages.byId;
-          state.messages.byId = otherMessages;
-          state.messages.allIds = state.messages.allIds.filter((msgId) => msgId !== messageId);
-        });
+      if (allIds.includes(id.toString())) {
+        const { [id]: channel, ...otherChannels } = state.byId;
+        return {
+          byId: otherChannels,
+          allIds: state.allIds.filter((channelId) => channelId !== id.toString()),
+        };
       }
+      return null;
     },
     renameChannelSuccess: (state, action) => {
       const { id, name } = action.payload;
-      state.channels.byId[id].name = name;
+      const channelOldData = state.byId[id];
+      return { byId: { ...state.byId, [id]: { ...channelOldData, name } }, allIds: state.allIds };
     },
   },
   extraReducers: {
@@ -41,7 +39,14 @@ export const channelsSlice = createSlice({
       const { id, message } = action.payload;
       const { channelId } = message;
       const channelMessagesIds = state.byId[channelId].messagesIds;
-      state.byId[channelId].messagesIds = [...channelMessagesIds, id];
+      const channelOldData = state.byId[channelId];
+      return {
+        byId: {
+          ...state.byId,
+          [channelId]: { ...channelOldData, messagesIds: [...channelMessagesIds, id] },
+        },
+        allIds: state.allIds,
+      };
     },
   },
 });

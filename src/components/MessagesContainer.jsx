@@ -8,7 +8,7 @@ import { SocketContext } from '../init.jsx';
 export default () => {
   const channelId = useSelector((state) => state.uiState.currentChannelId);
   const currentChannelMessages = useSelector((state) => {
-    const allMessages = Object.values(state.chatState.messages.byId);
+    const allMessages = Object.values(state.messagesState.byId);
     return allMessages.filter((msg) => {
       if (!msg) {
         return false;
@@ -23,11 +23,11 @@ export default () => {
         <div className="col h-100">
           <div className="d-flex flex-column h-100">
             <div id="messages-box" className="chat-messages overflow-auto mb-3">
-              {currentChannelMessages.map(({ username, text }) => (
+              {currentChannelMessages.map((msg) => (
                 <div className="text-break" key={uniqueId()}>
-                  <b>{username}</b>
+                  <b>{msg.username}</b>
                   :&nbsp;
-                  {text}
+                  {msg.text}
                 </div>
               ))}
             </div>

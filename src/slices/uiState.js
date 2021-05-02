@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { get } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -26,21 +25,17 @@ export const uiStateSlice = createSlice({
   reducers: {
     activateChannel: (state, action) => {
       const id = action.payload;
-      state.currentChannelId = id;
+      return { ...state, currentChannelId: id };
     },
     toggleSigninFormStatus: (state) => {
-      state.signinForm.isInvalid = !state.signinForm.isInvalid;
+      const isInvalid = !state.signinForm.isInvalid;
+      return { ...state, signinForm: { isInvalid: !isInvalid } };
     },
-    makeSignupUserFormInvalid: (state) => {
-      state.signupForm.userAlreadyExists = true;
-    },
+    makeSignupUserFormInvalid: (state) => ({ ...state, signupForm: { userAlreadyExists: true } }),
     toggleChannelDropDownMenu: (state, action) => {
-      const id = action.payload || null;
-      if (state.dropDownMenu.channelId === id) {
-        state.dropDownMenu.channelId = null;
-      } else {
-        state.dropDownMenu.channelId = id;
-      }
+      const id = action.payload;
+      const newValue = state.dropDownMenu.channelId === id ? null : id;
+      return { ...state, dropDownMenu: { channelId: newValue } };
     },
     openModalWindow: (state, action) => {
       const { type } = action.payload;

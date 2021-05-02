@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/no-autofocus */
 import React from 'react';
 import cn from 'classnames';
 import i18next from 'i18next';
@@ -10,7 +9,7 @@ import { activateChannel, closeModalWindow } from '../slices/uiState.js';
 
 export default () => {
   const dispatch = useDispatch();
-  const channels = useSelector((state) => Object.values(state.chatState.channels.byId));
+  const channels = useSelector((state) => Object.values(state.channelsState.byId));
   const channelsNames = channels.map((channel) => channel.name);
   const handleCloseModal = (e) => {
     e.preventDefault();
@@ -81,7 +80,6 @@ export default () => {
                       <form onSubmit={handleSubmit} noValidate>
                         <div className="form-group">
                           <input
-                            autoFocus
                             className={cn('mb-2', 'form-control', { 'is-invalid': errors.name })}
                             required
                             name="name"
