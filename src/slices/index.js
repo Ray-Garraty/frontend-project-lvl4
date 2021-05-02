@@ -1,16 +1,12 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import channelsSlice from './channels.js';
-import messagesSlice from './messages.js';
-import uiStateSlice from './uiState.js';
-
-export const channelsActions = channelsSlice.actions;
-export const messagesActions = messagesSlice.actions;
-export const uiStateActions = uiStateSlice.actions;
+import channelsReducer from './channels.js';
+import messagesReducer from './messages.js';
+import uiStateReducer from './uiState.js';
 
 const reducer = combineReducers({
-  channelsState: channelsSlice.reducer,
-  messagesState: messagesSlice.reducer,
-  uiState: uiStateSlice.reducer,
+  channelsState: channelsReducer,
+  messagesState: messagesReducer,
+  uiState: uiStateReducer,
 });
 
 export default reducer;
