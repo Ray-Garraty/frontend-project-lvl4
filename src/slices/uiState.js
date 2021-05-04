@@ -49,6 +49,13 @@ const uiStateSlice = createSlice({
   },
 });
 
-export const { actions } = uiStateSlice;
+export const {
+  activateChannel,
+  toggleSigninFormStatus,
+  makeSignupUserFormInvalid,
+  toggleChannelDropDownMenu,
+  openModalWindow,
+  closeModalWindow,
+} = uiStateSlice.actions;
 
-export default uiStateSlice;
+export default uiStateSlice.reducer;

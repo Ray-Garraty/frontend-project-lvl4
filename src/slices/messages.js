@@ -1,6 +1,6 @@
 import { uniq } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
-import { actions as channelsActions } from './channels.js';
+import { removeChannelSuccess } from './channels.js';
 
 const messagesSlice = createSlice({
   name: 'messages',
@@ -15,7 +15,7 @@ const messagesSlice = createSlice({
     },
   },
   extraReducers: {
-    [channelsActions]: (state, action) => {
+    [removeChannelSuccess]: (state, action) => {
       const { channelMessagesIds } = action.payload;
       channelMessagesIds.forEach((messageId) => {
         const { [messageId]: message, ...otherMessages } = state.byId;
@@ -28,6 +28,6 @@ const messagesSlice = createSlice({
   },
 });
 
-export const { actions } = messagesSlice;
+export const { addMessageSuccess } = messagesSlice.actions;
 
-export default messagesSlice;
+export default messagesSlice.reducer;
