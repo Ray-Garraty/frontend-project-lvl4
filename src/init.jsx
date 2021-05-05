@@ -13,13 +13,14 @@ import {
   Redirect,
 } from 'react-router-dom';
 import reducer from './slices/index.js';
-import locales from './index.js';
 import Slack from './components/Slack.jsx';
+import locales from './translations/index.js';
 import LoginPage from './components/LoginPage.jsx';
-import PageNotFound from './components/PageNotFound.jsx';
 import SignupPage from './components/SignupPage.jsx';
 import { activateChannel } from './slices/uiState.js';
 import { addMessageSuccess } from './slices/messages.js';
+import PageNotFound from './components/PageNotFound.jsx';
+import { SocketContext, AuthContext } from './contexts.js';
 import {
   addChannelSuccess,
   removeChannelSuccess,
@@ -29,8 +30,6 @@ import {
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';
 const socket = io(domain);
-export const SocketContext = React.createContext();
-const AuthContext = React.createContext();
 const user = JSON.parse(window.localStorage.getItem('user'));
 const store = configureStore({ reducer });
 

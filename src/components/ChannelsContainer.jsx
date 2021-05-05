@@ -1,8 +1,8 @@
 import React from 'react';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { openModalWindow } from '../slices/uiState.js';
 import Channel from './Channel.jsx';
+import { openModalWindow } from '../slices/uiState.js';
 
 export default () => {
   const channels = useSelector((state) => Object.values(state.channelsState.byId));

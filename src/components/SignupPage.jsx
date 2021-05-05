@@ -1,18 +1,18 @@
 import React from 'react';
 import axios from 'axios';
 import * as yup from 'yup';
-import { Formik, Form, Field } from 'formik';
 import cn from 'classnames';
 import i18next from 'i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { isEmpty, isNil } from 'lodash';
+import { Formik, Form, Field } from 'formik';
+import { useHistory } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import routes from '../routes.js';
 import { makeSignupUserFormInvalid } from '../slices/uiState.js';
 
 export default () => {
-  const dispatch = useDispatch();
   const history = useHistory();
+  const dispatch = useDispatch();
   const doesUserAlreadyExist = useSelector((state) => state.uiState.signupForm.userAlreadyExists);
   return (
     <div className="d-flex flex-column h-100">
