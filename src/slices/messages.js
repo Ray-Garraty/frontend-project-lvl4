@@ -1,6 +1,6 @@
-import { uniq } from 'lodash';
+import { uniq, omitBy } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
-import { removeChannelSuccess } from './channels.js';
+import { actions as generalActions } from './index.js';
 
 const messagesSlice = createSlice({
   name: 'messages',
@@ -15,19 +15,15 @@ const messagesSlice = createSlice({
     },
   },
   extraReducers: {
-    [removeChannelSuccess]: (state, action) => {
-      const { channelMessagesIds } = action.payload;
-      channelMessagesIds.forEach((messageId) => {
-        const { [messageId]: message, ...otherMessages } = state.byId;
-        return {
-          byId: otherMessages,
-          allIds: state.allIds.filter((msgId) => msgId !== messageId),
-        };
-      });
+    [generalActions.removeChannelSuccess]: (state, action) => {
+      const id = action.payload;
+      const updatedMessages = omitBy(state.byId, ({ channelId }) => channelId === id);
+      const allIds = Object.keys(updatedMessages);
+      return { byId: updatedMessages, allIds };
     },
   },
 });
 
-export const { addMessageSuccess } = messagesSlice.actions;
+export const { actions } = messagesSlice;
 
 export default messagesSlice.reducer;

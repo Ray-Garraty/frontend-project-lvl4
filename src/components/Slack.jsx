@@ -2,7 +2,7 @@ import React from 'react';
 import i18next from 'i18next';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleChannelDropDownMenu } from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 import ModalAddChannel from './ModalAddChannel.jsx';
 import ModalRemoveChannel from './ModalRemoveChannel.jsx';
 import ModalRenameChannel from './ModalRenameChannel.jsx';
@@ -15,7 +15,7 @@ export default () => {
   const dispatch = useDispatch();
   const handleDropDownMenu = (channelId) => (e) => {
     e.stopPropagation();
-    dispatch(toggleChannelDropDownMenu(channelId));
+    dispatch(actions.toggleChannelDropDownMenu(channelId));
   };
   const handleLogoutClick = () => {
     window.localStorage.clear();

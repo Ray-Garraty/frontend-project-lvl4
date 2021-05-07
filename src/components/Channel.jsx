@@ -2,11 +2,7 @@ import React from 'react';
 import cn from 'classnames';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  activateChannel,
-  openModalWindow,
-  toggleChannelDropDownMenu,
-} from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 
 export default (props) => {
   const { currentChannelId, channel: { id, name, removable } } = props;
@@ -61,21 +57,21 @@ export default (props) => {
   const dispatch = useDispatch();
   const handleDropDownMenu = (channelId) => (e) => {
     e.stopPropagation();
-    dispatch(toggleChannelDropDownMenu(channelId));
+    dispatch(actions.toggleChannelDropDownMenu(channelId));
   };
 
   const handleRemoveModal = (channelId) => (e) => {
     e.preventDefault();
-    dispatch(openModalWindow({ type: 'removeChannel', channelId }));
+    dispatch(actions.openModalWindow({ type: 'removeChannel', channelId }));
   };
 
   const handleRenameModal = (channelId) => (e) => {
     e.preventDefault();
-    dispatch(openModalWindow({ type: 'renameChannel', channelId }));
+    dispatch(actions.openModalWindow({ type: 'renameChannel', channelId }));
   };
 
   const handleActivateClick = (chnlId) => () => {
-    dispatch(activateChannel(chnlId));
+    dispatch(actions.activateChannel(chnlId));
   };
 
   return removable

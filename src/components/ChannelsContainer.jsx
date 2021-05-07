@@ -2,7 +2,7 @@ import React from 'react';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import Channel from './Channel.jsx';
-import { openModalWindow } from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 
 export default () => {
   const channels = useSelector((state) => Object.values(state.channelsState.byId));
@@ -11,7 +11,7 @@ export default () => {
 
   const handleAddModal = (e) => {
     e.preventDefault();
-    dispatch(openModalWindow({ type: 'addChannel' }));
+    dispatch(actions.openModalWindow({ type: 'addChannel' }));
   };
   return (
     <div className="col-3 border-right">

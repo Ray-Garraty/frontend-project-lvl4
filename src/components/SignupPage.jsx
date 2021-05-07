@@ -8,7 +8,7 @@ import { Formik, Form, Field } from 'formik';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import routes from '../routes.js';
-import { makeSignupUserFormInvalid } from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 
 export default () => {
   const history = useHistory();
@@ -52,7 +52,7 @@ export default () => {
             .catch((error) => {
               if (error.response.status === 409) {
                 // console.log('Такой пользователь уже существует');
-                dispatch(makeSignupUserFormInvalid());
+                dispatch(actions.makeSignupUserFormInvalid());
                 setSubmitting(false);
               } else {
                 console.log(error);

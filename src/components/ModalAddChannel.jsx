@@ -5,7 +5,7 @@ import { Formik } from 'formik';
 import { isEmpty } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { SocketContext } from '../contexts.js';
-import { activateChannel, closeModalWindow } from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -14,7 +14,7 @@ export default () => {
   const channelsNames = channels.map((channel) => channel.name);
   const handleCloseModal = (e) => {
     e.preventDefault();
-    dispatch(closeModalWindow());
+    dispatch(actions.closeModalWindow());
   };
   return (
     <>
@@ -58,8 +58,8 @@ export default () => {
                     await socket.emit('newChannel', { name }, ({ data: { id } }) => {
                       setSubmitting(false);
                       resetForm();
-                      dispatch(closeModalWindow());
-                      dispatch(activateChannel(id));
+                      dispatch(actions.closeModalWindow());
+                      dispatch(actions.activateChannel(id));
                     });
                   } catch (e) {
                     console.log(e);

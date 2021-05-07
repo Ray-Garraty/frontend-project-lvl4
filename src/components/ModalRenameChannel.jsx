@@ -5,8 +5,7 @@ import { isEmpty } from 'lodash';
 import React, { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SocketContext } from '../contexts.js';
-import { renameChannelSuccess } from '../slices/channels.js';
-import { activateChannel, closeModalWindow } from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 
 export default () => {
   const dispatch = useDispatch();
@@ -19,7 +18,7 @@ export default () => {
   const channelsNames = channels.map((channel) => channel.name);
   const handleCloseModal = (e) => {
     e.preventDefault();
-    dispatch(closeModalWindow());
+    dispatch(actions.closeModalWindow());
   };
   return (
     <>
@@ -59,11 +58,11 @@ export default () => {
                   try {
                     socket.emit('renameChannel', ({ id: channelId, name }), ({ status }) => {
                       if (status === 'ok') {
-                        dispatch(renameChannelSuccess({ id: channelId }));
+                        dispatch(actions.renameChannelSuccess({ id: channelId }));
                         setSubmitting(false);
                         resetForm();
-                        dispatch(closeModalWindow());
-                        dispatch(activateChannel(channelId));
+                        dispatch(actions.closeModalWindow());
+                        dispatch(actions.activateChannel(channelId));
                       }
                     });
                   } catch (e) {

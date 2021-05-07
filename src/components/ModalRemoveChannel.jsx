@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SocketContext } from '../contexts.js';
-import { closeModalWindow } from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 
 export default () => {
   const socket = useContext(SocketContext);
@@ -14,14 +14,14 @@ export default () => {
   const dispatch = useDispatch();
   const closeModal = (e) => {
     e.preventDefault();
-    dispatch(closeModalWindow());
+    dispatch(actions.closeModalWindow());
   };
   const removeChannel = (currentSocket) => async (e) => {
     e.preventDefault();
     try {
       currentSocket.emit('removeChannel', { id: channelId }, ({ status }) => {
         if (status === 'ok') {
-          dispatch(closeModalWindow());
+          dispatch(actions.closeModalWindow());
         }
       });
     } catch (err) {

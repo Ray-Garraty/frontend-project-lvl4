@@ -12,7 +12,7 @@ import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import routes from '../routes.js';
-import { toggleSigninFormStatus } from '../slices/uiState.js';
+import { actions } from '../slices/index.js';
 
 export default () => {
   const history = useHistory();
@@ -46,7 +46,7 @@ export default () => {
               setSubmitting(false);
               if (error.response.status === 401) {
                 console.log('Такого пользователя не существует');
-                dispatch(toggleSigninFormStatus());
+                dispatch(actions.toggleSigninFormStatus());
               } else {
                 console.log(error);
               }

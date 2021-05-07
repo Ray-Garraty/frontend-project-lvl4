@@ -12,20 +12,13 @@ import {
   Route,
   Redirect,
 } from 'react-router-dom';
-import reducer from './slices/index.js';
+import reducer, { actions } from './slices/index.js';
 import Slack from './components/Slack.jsx';
 import locales from './translations/index.js';
 import LoginPage from './components/LoginPage.jsx';
 import SignupPage from './components/SignupPage.jsx';
-import { activateChannel } from './slices/uiState.js';
-import { addMessageSuccess } from './slices/messages.js';
 import PageNotFound from './components/PageNotFound.jsx';
 import { SocketContext, AuthContext } from './contexts.js';
-import {
-  addChannelSuccess,
-  removeChannelSuccess,
-  renameChannelSuccess,
-} from './slices/channels.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const domain = isProduction ? '' : 'http://localhost:5000';
@@ -38,27 +31,27 @@ const initializeChannels = async (token) => axios
   .then((res) => {
     const { currentChannelId, channels, messages } = res.data;
     channels.forEach((channel) => {
-      store.dispatch(addChannelSuccess({ ...channel, messagesIds: [] }));
+      store.dispatch(actions.addChannelSuccess(channel));
     });
-    store.dispatch(activateChannel(currentChannelId));
+    store.dispatch(actions.activateChannel(currentChannelId));
     messages.forEach((msg) => {
-      store.dispatch(addMessageSuccess(msg));
+      store.dispatch(actions.addMessageSuccess(msg));
     });
   })
   .catch((err) => console.log('Ошибка при запросе к серверу на получение списка каналов и сообщений: ', err));
 
 export default async () => {
   socket.on('newChannel', (data) => {
-    store.dispatch(addChannelSuccess({ ...data, messagesIds: [] }));
+    store.dispatch(actions.addChannelSuccess(data));
   });
   socket.on('newMessage', (data) => {
-    store.dispatch(addMessageSuccess(data));
+    store.dispatch(actions.addMessageSuccess(data));
   });
   socket.on('removeChannel', ({ id }) => {
-    store.dispatch(removeChannelSuccess(id));
+    store.dispatch(actions.removeChannelSuccess(id));
   });
   socket.on('renameChannel', (data) => {
-    store.dispatch(renameChannelSuccess(data));
+    store.dispatch(actions.renameChannelSuccess(data));
   });
 
   if (user) {
