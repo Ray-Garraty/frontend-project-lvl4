@@ -1,6 +1,6 @@
 import { uniq, omitBy } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
-import { actions as generalActions } from './index.js';
+import { actions as channelActions } from './channels.js';
 
 const messagesSlice = createSlice({
   name: 'messages',
@@ -15,7 +15,7 @@ const messagesSlice = createSlice({
     },
   },
   extraReducers: {
-    [generalActions.removeChannelSuccess]: (state, action) => {
+    [channelActions.removeChannelSuccess]: (state, action) => {
       const id = action.payload;
       const updatedMessages = omitBy(state.byId, ({ channelId }) => channelId === id);
       const allIds = Object.keys(updatedMessages);
